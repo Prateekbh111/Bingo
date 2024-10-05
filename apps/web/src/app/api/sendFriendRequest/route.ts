@@ -4,14 +4,14 @@ import prisma from "@/lib/prisma";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(req: Request) {
 	const { friendEmail } = await req.json();
 	const session = await getServerSession(authOptions);
 
 	if (!session) {
 		return Response.json(
 			{ success: false, message: "Not Authorized" },
-			{ status: 401 }
+			{ status: 401 },
 		);
 	}
 
@@ -25,7 +25,7 @@ export async function POST(req: Request, res: Response) {
 	if (userEmail === friendEmail) {
 		return Response.json(
 			{ success: false, message: "Can't send request to yourself." },
-			{ status: 400 }
+			{ status: 400 },
 		);
 	}
 	const userToAdd = await prisma.user.findUnique({
@@ -43,7 +43,7 @@ export async function POST(req: Request, res: Response) {
 	if (!idToAdd) {
 		return Response.json(
 			{ success: false, message: "User with this email does not exits." },
-			{ status: 400 }
+			{ status: 400 },
 		);
 	}
 
@@ -58,7 +58,7 @@ export async function POST(req: Request, res: Response) {
 	if (isAlreadyFriendRequested) {
 		return Response.json(
 			{ success: false, message: "Already Requested." },
-			{ status: 400 }
+			{ status: 400 },
 		);
 	}
 
@@ -73,7 +73,7 @@ export async function POST(req: Request, res: Response) {
 	if (isAlreadyFriend) {
 		return Response.json(
 			{ success: false, message: "Already Friends." },
-			{ status: 400 }
+			{ status: 400 },
 		);
 	}
 
@@ -86,7 +86,7 @@ export async function POST(req: Request, res: Response) {
 			name: session.user.name,
 			email: session.user.email,
 			image: session.user.image,
-		}
+		},
 	);
 
 	await prisma.friendRequest.create({
@@ -103,6 +103,6 @@ export async function POST(req: Request, res: Response) {
 		},
 		{
 			status: 200,
-		}
+		},
 	);
 }

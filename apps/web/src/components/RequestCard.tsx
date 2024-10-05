@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Button } from "./ui/button";
 import { Check, LoaderCircle, X } from "lucide-react";
@@ -15,13 +15,13 @@ export function RequestCard({
 	const { toast } = useToast();
 	const [isDenying, setIsDenying] = useState<boolean>(false);
 	const [isAccepting, setIsAccepting] = useState<boolean>(false);
-	const handleAcceptRequest = async (friendData: any) => {
+	const handleAcceptRequest = async (friendData: FriendRequest) => {
 		try {
 			setIsAccepting(true);
 
 			const response = await axios.post<ApiResponse>(
 				"/api/acceptFriendRequest",
-				JSON.stringify(friendData)
+				JSON.stringify(friendData),
 			);
 
 			toast({
@@ -29,10 +29,9 @@ export function RequestCard({
 				description: `${response.data.message}`,
 			});
 			setUserFriendRequests((prevRequests) =>
-				prevRequests.filter((request) => request.id !== friendData.id)
+				prevRequests.filter((request) => request.id !== friendData.id),
 			);
 		} catch (error) {
-			const axiosError = error as AxiosError<ApiResponse>;
 			toast({
 				title: "Uh oh! Something went wrong.",
 				description: "There was a problem with your request.",
@@ -48,17 +47,16 @@ export function RequestCard({
 
 			const response = await axios.post<ApiResponse>(
 				"/api/rejectFriendRequest",
-				JSON.stringify(friendData)
+				JSON.stringify(friendData),
 			);
 			toast({
 				title: "Success",
 				description: `${response.data.message}`,
 			});
 			setUserFriendRequests((prevRequests) =>
-				prevRequests.filter((request) => request.id !== friendData.id)
+				prevRequests.filter((request) => request.id !== friendData.id),
 			);
 		} catch (error) {
-			const axiosError = error as AxiosError<ApiResponse>;
 			toast({
 				title: "Uh oh! Something went wrong.",
 				description: "There was a problem with your request.",

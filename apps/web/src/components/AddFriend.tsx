@@ -20,7 +20,7 @@ export default function AddFriend() {
 	const { toast } = useToast();
 	const [isSendingRequest, setIsSendingRequest] = useState<boolean>(false);
 
-	async function handleSubmit(e: any) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const formDataObject = Object.fromEntries(formData.entries());
@@ -50,7 +50,7 @@ export default function AddFriend() {
 			}
 		} finally {
 			setIsSendingRequest(false);
-			e.target.reset();
+			(e.target as HTMLFormElement).reset();
 		}
 	}
 

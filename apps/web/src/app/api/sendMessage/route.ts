@@ -4,7 +4,7 @@ import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(req: Request) {
 	try {
 		const { message, chatId } = await req.json();
 		const session = await getServerSession(authOptions);
@@ -12,7 +12,7 @@ export async function POST(req: Request, res: Response) {
 		if (!session) {
 			return Response.json(
 				{ success: false, message: "UNAUTHORIZED" },
-				{ status: 402 }
+				{ status: 402 },
 			);
 		}
 
@@ -31,7 +31,7 @@ export async function POST(req: Request, res: Response) {
 		if (!isFriends) {
 			return Response.json(
 				{ success: false, message: "UNAUTHORIZED" },
-				{ status: 402 }
+				{ status: 402 },
 			);
 		}
 
@@ -70,7 +70,7 @@ export async function POST(req: Request, res: Response) {
 				senderId: userId,
 				receiverId: otherUserId,
 				timestamp: new Date(),
-			}
+			},
 		);
 		return Response.json({ success: true, message: "Sent" }, { status: 200 });
 	} catch (error) {

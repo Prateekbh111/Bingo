@@ -2,14 +2,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(req: Request) {
 	const session = await getServerSession(authOptions);
 	const requestUserData: FriendRequest = await req.json();
 
 	if (!session?.user) {
 		return Response.json(
 			{ success: false, message: "UNAUTHORIZED" },
-			{ status: 402 }
+			{ status: 402 },
 		);
 	}
 
@@ -24,7 +24,7 @@ export async function POST(req: Request, res: Response) {
 		if (!hasFriendRequest) {
 			return Response.json(
 				{ success: false, message: "You don't have friend request" },
-				{ status: 402 }
+				{ status: 402 },
 			);
 		}
 
@@ -36,13 +36,13 @@ export async function POST(req: Request, res: Response) {
 
 		return Response.json(
 			{ success: true, message: "Friend Request Denied" },
-			{ status: 200 }
+			{ status: 200 },
 		);
 	} catch (error) {
 		console.log(error);
 		return Response.json(
 			{ success: true, message: "Friend Request Denied" },
-			{ status: 200 }
+			{ status: 200 },
 		);
 	}
 }

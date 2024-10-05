@@ -13,8 +13,10 @@ export default function HowToPlay({ session }: { session: Session }) {
 					<ol className="list-decimal list-inside space-y-4 text-foreground">
 						<li>Get your unique Bingo card with random numbers</li>
 						<li>Listen for the caller to announce numbers</li>
-						<li>Mark off the numbers on your card as they're called</li>
-						<li>Shout "BINGO!" when you complete a winning pattern</li>
+						<li>Mark off the numbers on your card as they&apos;re called</li>
+						<li>
+							Shout &quot;BINGO!&qout; when you complete a winning pattern
+						</li>
 						<li>Verify your win and collect your prize!</li>
 					</ol>
 				</div>

@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
-import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import { Gamepad2, LoaderCircle, Users } from "lucide-react";
 import WinnerModal from "./Winner_modal";
 
@@ -23,6 +20,11 @@ type User = {
 	name: string;
 	email: string;
 	image: string;
+};
+
+type Payload = {
+	playerNumber?: string;
+	otherPlayer?: User;
 };
 
 export const INIT_GAME = "init_game";
@@ -39,7 +41,6 @@ export default function GameInterface({
 	session: Session;
 }) {
 	const sound = new Audio("/sound.wav");
-	const router = useRouter();
 	const { toast } = useToast();
 	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
@@ -51,7 +52,7 @@ export default function GameInterface({
 	const [linesCompleted, setLinesCompleted] = useState<number>(0);
 	const [nextNumber, setNextNumber] = useState<number>(1);
 	const [socket, setSocket] = useState<WebSocket | null>(null);
-	const [userFriends, setUserFriends] = useState<Friend[]>(friends);
+	const [userFriends] = useState<Friend[]>(friends);
 	const [disabled, setDisabled] = useState<boolean>(false);
 	const [opponent, setOpponent] = useState<User | null>();
 	const [turn, setTurn] = useState<string>("player1");
@@ -81,7 +82,7 @@ export default function GameInterface({
 			socket?.send(
 				JSON.stringify({
 					type: GAME_OVER,
-				})
+				}),
 			);
 		}
 	}, [card]);
@@ -89,7 +90,7 @@ export default function GameInterface({
 	useEffect(() => {
 		if (!isCardFilled && nextNumber > 25) {
 			socket?.send(
-				JSON.stringify({ type: GRID_FILLED, payload: { board: card } })
+				JSON.stringify({ type: GRID_FILLED, payload: { board: card } }),
 			);
 			setIsCardFilled(true);
 		}
@@ -115,8 +116,8 @@ export default function GameInterface({
 		}
 	};
 
-	const handleInitGame = (payload: any) => {
-		setPlayerNumber(payload.playerNumber);
+	const handleInitGame = (payload: Payload) => {
+		setPlayerNumber(payload.playerNumber!);
 		setOpponent(payload.otherPlayer);
 		setIsGameStarted(true);
 		setDisabled(false);
@@ -134,7 +135,7 @@ export default function GameInterface({
 			.map(() =>
 				Array(5)
 					.fill(null)
-					.map(() => ({ number: null, marked: false }))
+					.map(() => ({ number: null, marked: false })),
 			);
 	};
 
@@ -155,9 +156,9 @@ export default function GameInterface({
 		setCard((prevCard) =>
 			prevCard.map((row) =>
 				row.map((cell) =>
-					cell.number === number ? { ...cell, marked: true } : cell
-				)
-			)
+					cell.number === number ? { ...cell, marked: true } : cell,
+				),
+			),
 		);
 	};
 
@@ -183,7 +184,7 @@ export default function GameInterface({
 				JSON.stringify({
 					type: MOVE,
 					payload: { number: card[row][col].number },
-				})
+				}),
 			);
 			setCard((prevCard) => {
 				const newCard = [...prevCard];
@@ -194,36 +195,9 @@ export default function GameInterface({
 		}
 	};
 
-	const handleGameSelect = (whomToPlayWith: string) => {
-		const userId = session?.user.id;
-		const sortedIds = [userId, whomToPlayWith].sort();
-		const gameId = `${sortedIds[0]}--${sortedIds[1]}`;
-		socket?.send(JSON.stringify({ type: INIT_GAME }));
-	};
-
 	const handleRandomGameSelect = () => {
 		setDisabled(true);
 		socket?.send(JSON.stringify({ type: INIT_GAME }));
-	};
-
-	const gameInviteHandler = (data: any) => {
-		toast({
-			title: "Game Invite",
-			description: `Invite from ${data.senderName}`,
-			action: (
-				<ToastAction
-					altText="Accept invite"
-					className="py-6 px-8"
-					onClick={async () => {
-						await axios.post("/api/acceptGameInvite", { gameId: data.gameId });
-						router.push(`/game/${data.gameId}`);
-					}}
-				>
-					Accept
-				</ToastAction>
-			),
-			className: "bg-blue flex",
-		});
 	};
 
 	const updateCellSize = (containerWidth: number) => {
@@ -248,7 +222,7 @@ export default function GameInterface({
 								ref={(el) => {
 									if (el) {
 										const resizeObserver = new ResizeObserver((entries) => {
-											for (let entry of entries) {
+											for (const entry of entries) {
 												updateCellSize(entry.contentRect.width);
 											}
 										});
@@ -279,7 +253,7 @@ export default function GameInterface({
 										>
 											{cell.number}
 										</Button>
-									))
+									)),
 								)}
 							</div>
 						</CardContent>

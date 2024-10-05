@@ -14,7 +14,7 @@ export default function HeroSection() {
 				<div className="flex flex-col items-center justify-center  gap-4">
 					<div className="text-center">
 						<span className="tracking-tighter text-2xl md:text-3xl font-medium text-primary">
-							Let's Play
+							Let&apos;s Play
 						</span>
 						<h1 className="tracking-tighter text-7xl md:text-8xl xl:text-8xl font-bold my-2">
 							<span className="font-bold bg-gradient-to-b from-green-400 to-green-700 bg-clip-text text-transparent">

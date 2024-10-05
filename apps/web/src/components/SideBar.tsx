@@ -28,7 +28,7 @@ export default async function Sidebar({ session }: { session: Session }) {
 		},
 	});
 	const friendRequests: FriendRequest[] = allFriendRequests.map(
-		(request) => request.sender
+		(request) => request.sender,
 	);
 
 	return (
@@ -43,11 +43,15 @@ export default async function Sidebar({ session }: { session: Session }) {
 					<div>
 						<div className="flex items-center gap-3 mb-6">
 							<Avatar className="w-10 h-10">
-								<AvatarImage src={session?.user.image!} />
-								<AvatarFallback>{session?.user.name![0]}</AvatarFallback>
+								<AvatarImage src={session?.user.image ?? ""} />
+								<AvatarFallback>
+									{session?.user.name ? session.user.name[0] : "?"}
+								</AvatarFallback>{" "}
 							</Avatar>
 							<div>
-								<div className="font-medium">{session?.user.name}</div>
+								<div className="font-medium">
+									{session?.user.name ?? "Unknown User"}
+								</div>
 								<div className="text-sm text-muted-foreground">Online</div>
 							</div>
 						</div>

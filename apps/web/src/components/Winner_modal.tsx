@@ -37,7 +37,7 @@ const WinnerModal: React.FC<WinnerModalProps> = ({
 				</DialogHeader>
 				<div className="my-4">
 					<p className="text-center">
-						You've completed a Bingo! Great job on your strategy and luck.
+						You&apos;ve completed a Bingo! Great job on your strategy and luck.
 					</p>
 				</div>
 				<DialogFooter className="flex justify-center gap-3 ">

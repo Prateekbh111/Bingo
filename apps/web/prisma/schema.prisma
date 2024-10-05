@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String?
+  accounts      Account[]
+  sessions      Session[]
+  friends      Friends[]         
+  receivedRequests FriendRequest[]
+}
+
+model Friends{
+  id            String    @id @default(cuid())
+  friendOfId    String
+  friendId      String    
+  friend      User    @relation(fields: [friendId], references: [id])
+}
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender   User     @relation(fields: [senderId], references: [id])
+  receiverId String
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String
+  timestamp DateTime @default(now())
+
+  chatId    String?
+  chat      Chat?    @relation(fields: [chatId], references: [id])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  messages  Message[]
+}
+
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// model Game {
+//   id           String        @id() @default(uuid())
+//   startTime    String?
+//   endTime      String?
+//   status       String?
+//   gameUsers    GameUser[]    @relation("game")
+//   bingoCards   BingoCard[]   @relation("game")
+//   chatMessages ChatMessage[] @relation("game")
+//   dateCreated  DateTime      @default(now())
+//   dateUpdated  DateTime      @default(now()) @updatedAt()
+// }
+
+// /// @@allow('all', true)
+// model GameUser {
+//   id          String   @id() @default(uuid())
+//   score       Float?
+//   userId      String
+//   user        User?    @relation(fields: [userId], references: [id], name: "user")
+//   gameId      String
+//   game        Game?    @relation(fields: [gameId], references: [id], name: "game")
+//   dateCreated DateTime @default(now())
+//   dateUpdated DateTime @default(now()) @updatedAt()
+// }
+
+// /// @@allow('all', true)
+// model BingoCard {
+//   id          String   @id() @default(uuid())
+//   cardData    String?
+//   userId      String
+//   user        User?    @relation(fields: [userId], references: [id], name: "user")
+//   gameId      String
+//   game        Game?    @relation(fields: [gameId], references: [id], name: "game")
+//   dateCreated DateTime @default(now())
+//   dateUpdated DateTime @default(now()) @updatedAt()
+// }
+
+// /// @@allow('all', true)
+// model ChatMessage {
+//   id          String   @id() @default(uuid())
+//   content     String?
+//   timestamp   String?
+//   userId      String
+//   user        User?    @relation(fields: [userId], references: [id], name: "user")
+//   gameId      String
+//   game        Game?    @relation(fields: [gameId], references: [id], name: "game")
+//   dateCreated DateTime @default(now())
+//   dateUpdated DateTime @default(now()) @updatedAt()
+// }
+
+// /// @@allow('all', true)
+// model Friend {
+//   id          String   @id() @default(uuid())
+//   status      String?
+//   userId      String
+//   user        User?    @relation(fields: [userId], references: [id], name: "user")
+//   friendId    String
+//   friend      User?    @relation(fields: [friendId], references: [id], name: "friend")
+//   dateCreated DateTime @default(now())
+//   dateUpdated DateTime @default(now()) @updatedAt()
+// }
+
+// /// @@auth
+// /// @@allow('all', auth().id == this.id)
+// /// @@allow('all', auth().globalRole == 'ADMIN')
+// /// @@allow('create', globalRole != 'ADMIN')
+// /// @@allow('read', true)
+// model User {
+//   id              String        @id() @default(uuid())
+//   name            String?
+//   email           String?       @unique()
+//   pictureUrl      String?       @default("https://i.imgur.com/ZdJSK3Y.jpeg")
+//   tokenInvitation String?
+//   emailVerified   Boolean?
+//   status          UserStatus    @default(VERIFIED)
+//   globalRole      String        @default("USER")
+//   /// @password
+//   /// @omit
+//   password        String?
+//   dateCreated     DateTime      @default(now())
+//   dateUpdated     DateTime      @default(now()) @updatedAt()
+//   accounts        Account[]
+//   sessions        Session[]
+//   gameUsers       GameUser[]    @relation("user")
+//   bingoCards      BingoCard[]   @relation("user")
+//   chatMessages    ChatMessage[] @relation("user")
+//   friends         Friend[]      @relation("user")
+//   friendsAsFriend Friend[]      @relation("friend")
+// }
+
+// /// @@allow('all', auth().id == user.id)
+// model Account {
+//   id                       String  @id() @default(uuid())
+//   userId                   String
+//   type                     String
+//   provider                 String
+//   providerAccountId        String
+//   refresh_token            String?
+//   access_token             String?
+//   expires_at               Int?
+//   token_type               String?
+//   scope                    String?
+//   id_token                 String?
+//   session_state            String?
+//   user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   refresh_token_expires_in Int?
+
+//   @@unique([provider, providerAccountId])
+// }
+
+// /// @@allow('all', auth().id == user.id)
+// model Session {
+//   id           String   @id() @default(uuid())
+//   sessionToken String   @unique()
+//   userId       String
+//   expires      DateTime
+//   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+// }

@@ -28,7 +28,14 @@ export default async function Sidebar({ session }: { session: Session }) {
 		},
 	});
 	const friendRequests: FriendRequest[] = allFriendRequests.map(
-		(request) => request.sender,
+		(request: {
+			sender: {
+				id: string | null;
+				name: string | null;
+				email: string | null;
+				image: string | null;
+			};
+		}) => request.sender,
 	);
 
 	return (

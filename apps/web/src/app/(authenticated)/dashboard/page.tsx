@@ -26,7 +26,9 @@ export default async function HomePage() {
 		},
 	});
 
-	const friends: Friend[] = allFriends.map((request) => request.friend);
+	const friends: Friend[] = allFriends.map(
+		(request: { friend: Friend }) => request.friend,
+	);
 
 	return (
 		<div className="w-full">

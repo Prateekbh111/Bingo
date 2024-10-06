@@ -63,7 +63,7 @@ export default function GameInterface({
 	const [winnerName, setWinnerName] = useState("");
 
 	useEffect(() => {
-		const newSocket = new WebSocket("ws://localhost:8080");
+		const newSocket = new WebSocket("ws://bingo-ws.vercel.app:8080");
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
 		setSocket(newSocket);

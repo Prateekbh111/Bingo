@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2, LoaderCircle, Users } from "lucide-react";
 import WinnerModal from "./Winner_modal";
+import jwt from "jsonwebtoken";
 
 type BingoCell = {
 	number: number | null;
@@ -36,11 +37,13 @@ export const GAME_OVER = "game_over";
 export default function GameInterface({
 	friends,
 	session,
+	sessionToken,
 }: {
 	friends: Friend[];
 	session: Session;
+	sessionToken: string;
 }) {
-	const sound = new Audio("/sound.wav");
+	// const sound = new Audio("/sound.wav");
 	const { toast } = useToast();
 	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
@@ -64,11 +67,12 @@ export default function GameInterface({
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			"ws://ec2-3-110-153-254.ap-south-1.compute.amazonaws.com:8080",
+			`ws://localhost:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
 		setSocket(newSocket);
+
 		return () => newSocket.close();
 	}, []);
 
@@ -123,7 +127,7 @@ export default function GameInterface({
 		setOpponent(payload.otherPlayer);
 		setIsGameStarted(true);
 		setDisabled(false);
-		sound.play();
+		// sound.play();
 	};
 
 	const handleMove = (number: number) => {

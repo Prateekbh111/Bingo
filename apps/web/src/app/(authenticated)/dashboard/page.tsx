@@ -11,8 +11,6 @@ export default async function HomePage() {
 	if (!session) notFound();
 	const cookieStore = cookies();
 	const sessionToken = cookieStore.get("next-auth.session-token");
-	console.log(sessionToken);
-	console.log(session?.user.id);
 
 	const allFriends = await prisma.friends.findMany({
 		where: {
@@ -40,7 +38,7 @@ export default async function HomePage() {
 			<GameInterface
 				friends={friends}
 				session={session}
-				sessionToken={sessionToken?.value!}
+				sessionToken={sessionToken ? sessionToken.value : undefined}
 			/>
 		</div>
 	);

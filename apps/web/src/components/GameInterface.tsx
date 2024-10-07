@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2, LoaderCircle, Users } from "lucide-react";
 import WinnerModal from "./Winner_modal";
-import jwt from "jsonwebtoken";
 
 type BingoCell = {
 	number: number | null;
@@ -41,7 +40,7 @@ export default function GameInterface({
 }: {
 	friends: Friend[];
 	session: Session;
-	sessionToken: string;
+	sessionToken: string | undefined;
 }) {
 	// const sound = new Audio("/sound.wav");
 	const { toast } = useToast();

@@ -1,0 +1,8 @@
+{
+	"rewrites": [
+		{
+			"source": "/ws/:token",
+			"destination": "ws://ec2-65-2-73-239.ap-south-1.compute.amazonaws.com:8080/token=:token"
+		}
+	]
+}

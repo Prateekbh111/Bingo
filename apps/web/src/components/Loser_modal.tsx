@@ -37,7 +37,7 @@ const LoserModal: React.FC<LoserModalProps> = ({
 				</DialogHeader>
 				<div className="my-4">
 					<p className="text-center">
-						Don't give up! Every game is a new opportunity to win.
+						Don&apos;t give up! Every game is a new opportunity to win.
 					</p>
 				</div>
 				<DialogFooter className="flex justify-center gap-3 ">

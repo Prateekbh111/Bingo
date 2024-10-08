@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2, LoaderCircle, LoaderCircleIcon, Users } from "lucide-react";
 import WinnerModal from "./Winner_modal";
+import LoserModal from "./Loser_modal";
 
 type BingoCell = {
 	number: number | null;
@@ -61,12 +62,13 @@ export default function GameInterface({
 	const [playerNumber, setPlayerNumber] = useState<string | null>(null);
 	const [isCardFilled, setIsCardFilled] = useState<boolean>(false);
 
+	const [isLoser, setIsLoser] = useState(false);
 	const [isWinner, setIsWinner] = useState(false);
 	const [winnerName, setWinnerName] = useState("");
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
@@ -115,8 +117,13 @@ export default function GameInterface({
 				setOpponentLinesCompleted(messageJson.payload.linesCompleted);
 				break;
 			case GAME_OVER:
-				setIsWinner(true);
-				setWinnerName(messageJson.payload.winnerName);
+				const winner = messageJson.payload.winnerName;
+				setWinnerName(winner);
+				if (winner == session.user.name) {
+					setIsWinner(true);
+				} else {
+					setIsLoser(true);
+				}
 				break;
 		}
 	};
@@ -155,6 +162,8 @@ export default function GameInterface({
 		setLinesCompleted(0);
 		setOpponentLinesCompleted(0);
 		setIsGameStarted(false);
+		setIsWinner(false);
+		setIsLoser(false);
 	};
 
 	const markNumber = (number: number) => {
@@ -206,12 +215,13 @@ export default function GameInterface({
 	};
 
 	const updateCellSize = (containerWidth: number) => {
-		const newSize = Math.floor((containerWidth - 30) / 5); // 40px for gaps (8px * 5)
-		setCellSize(Math.max(newSize, 56)); // Minimum size of 56px
+		const newSize = Math.floor((containerWidth - 30) / 5);
+		setCellSize(Math.max(newSize, 56));
 	};
 
 	const handlePlayAgain = () => {
 		setIsWinner(false);
+		setIsLoser(false);
 		setWinnerName("");
 		resetGame();
 	};
@@ -370,9 +380,17 @@ export default function GameInterface({
 					)}
 				</div>
 			</div>
+
 			<WinnerModal
 				isOpen={isWinner}
 				onClose={() => setIsWinner(false)}
+				winner={winnerName}
+				onPlayAgain={handlePlayAgain}
+			/>
+
+			<LoserModal
+				isOpen={isLoser}
+				onClose={() => setIsLoser(false)}
 				winner={winnerName}
 				onPlayAgain={handlePlayAgain}
 			/>

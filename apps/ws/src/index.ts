@@ -7,9 +7,7 @@ const bingoManager = new BingoManager();
 const secret = "secret";
 
 async function getTokenVal(req: any) {
-	const sessionToken = req.headers.cookie!.match(
-		/next-auth\.session-token=([^;]*)/
-	)[1];
+	const sessionToken = req.url.match(/\/token=(.*)/)[1];
 	// const reqToken = req.headers.cookie!.split("=")[1];
 	// console.log(sessionToken);
 	const decoded = await decode({

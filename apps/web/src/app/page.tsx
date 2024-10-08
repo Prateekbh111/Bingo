@@ -11,7 +11,7 @@ export default async function page() {
 	return (
 		<div>
 			<Navbar session={session!} />
-			<HeroSection />
+			<HeroSection session={session!} />
 			<Features />
 			<HowToPlay session={session!} />
 			<Footer />

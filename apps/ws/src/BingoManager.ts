@@ -37,7 +37,7 @@ export class BingoManager {
 			console.log(message.type);
 
 			if (message.type == INIT_GAME) {
-				if (this.pendingUser && this.pendingUser.socket !== user.socket) {
+				if (this.pendingUser && this.pendingUser.id !== user.id) {
 					const game = new Game(this.pendingUser, user);
 					this.games.push(game);
 					this.pendingUser = null;
@@ -48,7 +48,7 @@ export class BingoManager {
 
 			if (message.type == GRID_FILLED) {
 				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user
+					(game) => game.player1 === user || game.player2 === user,
 				);
 				const board = message.payload.board;
 
@@ -58,7 +58,7 @@ export class BingoManager {
 					game.player2.socket.send(
 						JSON.stringify({
 							type: GRID_FILLED,
-						})
+						}),
 					);
 				} else if (user == game?.player2) {
 					game.setBoard2(board);
@@ -66,25 +66,25 @@ export class BingoManager {
 					game.player1.socket.send(
 						JSON.stringify({
 							type: GRID_FILLED,
-						})
+						}),
 					);
 				}
 			}
 			if (message.type == GAME_OVER) {
 				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user
+					(game) => game.player1 === user || game.player2 === user,
 				);
 				if (game) {
 					game.gameOver(user);
 				}
 				this.games = this.games.filter(
-					(game) => game.player1 === user || game.player2 === user
+					(game) => game.player1 === user || game.player2 === user,
 				);
 			}
 
 			if (message.type == MOVE) {
 				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user
+					(game) => game.player1 === user || game.player2 === user,
 				);
 
 				if (game) {

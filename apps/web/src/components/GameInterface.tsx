@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, LoaderCircle, Users } from "lucide-react";
+import { Gamepad2, LoaderCircle, LoaderCircleIcon, Users } from "lucide-react";
 import WinnerModal from "./Winner_modal";
 
 type BingoCell = {
@@ -66,7 +66,7 @@ export default function GameInterface({
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`ws://localhost:8080/token=${sessionToken}`,
+			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
@@ -215,6 +215,15 @@ export default function GameInterface({
 		setWinnerName("");
 		resetGame();
 	};
+
+	if (!socket || !card)
+		return (
+			<div className="min-h-screen flex justify-center items-center">
+				<div className="flex justify-center items-center gap-2 text-3xl font-bold">
+					Loading <LoaderCircleIcon className="animate-spin" />
+				</div>
+			</div>
+		);
 
 	return (
 		<div className="bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full">

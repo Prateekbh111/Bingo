@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Spotlight } from "./ui/spotlight";
 import { Button } from "./ui/button";
 import { Gamepad2 } from "lucide-react";
+import { Session } from "next-auth";
 
-export default function HeroSection() {
+export default function HeroSection({ session }: { session: Session }) {
 	return (
 		<>
 			<Spotlight
@@ -28,7 +29,7 @@ export default function HeroSection() {
 						Challenge your friends, win big, and enjoy a seamless gaming
 						adventure!
 					</p>
-					<Link href={"/dashboard"}>
+					<Link href={`${session ? "/dashboard" : "/login"}`}>
 						<Button className="px-20 py-8 flex items-center justify-center gap-2 rounded-md">
 							<span className="font-bold text-xl">Play</span>
 							<Gamepad2 />

@@ -68,7 +68,7 @@ export default function GameInterface({
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
@@ -83,18 +83,6 @@ export default function GameInterface({
 
 	useEffect(() => {
 		setLinesCompleted(checkBingoWin(card));
-		if (checkBingoWin(card) == 5) {
-			setIsWinner(true);
-			setWinnerName(session.user.name || "Player");
-			socket?.send(
-				JSON.stringify({
-					type: GAME_OVER,
-				}),
-			);
-		}
-	}, [card]);
-
-	useEffect(() => {
 		if (!isCardFilled && nextNumber > 25) {
 			socket?.send(
 				JSON.stringify({ type: GRID_FILLED, payload: { board: card } }),
@@ -113,6 +101,7 @@ export default function GameInterface({
 				setIsOpponentCardFilled(true);
 				break;
 			case MOVE:
+				console.log(messageJson.payload);
 				handleMove(messageJson.payload.number);
 				setOpponentLinesCompleted(messageJson.payload.linesCompleted);
 				break;
@@ -237,9 +226,25 @@ export default function GameInterface({
 
 	return (
 		<div className="bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full">
-			<div className="md:pt-24 flex justify-center items-center h-full w-full">
+			<div className="md:pt-24 flex flex-col md:flex-row md:gap-10 justify-center items-center h-full w-full ">
+				{isGameStarted && (
+					<PlayerInfo
+						player={{
+							id: session.user.id,
+							name: "You",
+							email: session.user.email!,
+							image: session.user.image!,
+						}}
+						isTurn={turn === playerNumber}
+						isCurrentPlayer={true}
+						isCardFilled={isCardFilled}
+						linesCompleted={linesCompleted}
+					/>
+				)}
 				<div className="max-w-sm w-full">
-					<Card className="w-full dark:bg-card bg-neutral-100">
+					<Card
+						className={`w-full dark:bg-card bg-neutral-100 ${isGameStarted && "rounded-none md:rounded-md"}`}
+					>
 						<CardContent className="p-4">
 							<div
 								className="grid grid-cols-5 gap-2"
@@ -283,11 +288,20 @@ export default function GameInterface({
 						</CardContent>
 					</Card>
 				</div>
+				{isGameStarted && (
+					<PlayerInfo
+						player={opponent!}
+						isTurn={turn !== playerNumber}
+						isCurrentPlayer={false}
+						isCardFilled={isOpponentCardFilled}
+						linesCompleted={opponentLinesCompleted}
+					/>
+				)}
 			</div>
 
-			<div className="md:pt-24 flex justify-center items-center h-full w-full">
-				<div className="max-w-sm w-full">
-					{!isGameStarted ? (
+			{!isGameStarted && (
+				<div className="md:pt-24 flex justify-center items-center h-full w-full">
+					<div className="max-w-sm w-full">
 						<div className="space-y-8">
 							<Button
 								className="w-full py-8 text-lg"
@@ -343,43 +357,9 @@ export default function GameInterface({
 								)}
 							</div>
 						</div>
-					) : (
-						<Card className="w-full p-6 space-y-6">
-							<div className="flex justify-between items-center w-full max-w-md mx-auto gap-4">
-								<PlayerInfo
-									player={{
-										id: session.user.id,
-										name: session.user.name!,
-										email: session.user.email!,
-										image: session.user.image!,
-									}}
-									isCurrentPlayer={true}
-									isCardFilled={isCardFilled}
-									linesCompleted={linesCompleted}
-								/>
-								<span className="text-2xl font-bold mx-4">VS</span>
-								<PlayerInfo
-									player={opponent!}
-									isCurrentPlayer={false}
-									isCardFilled={isOpponentCardFilled}
-									linesCompleted={opponentLinesCompleted}
-								/>
-							</div>
-							<div className="text-center">
-								<div
-									className={`text-2xl font-bold ${
-										turn === playerNumber
-											? "text-primary"
-											: "text-muted-foreground"
-									}`}
-								>
-									{turn === playerNumber ? "Your Turn" : "Opponent's Turn"}
-								</div>
-							</div>
-						</Card>
-					)}
+					</div>
 				</div>
-			</div>
+			)}
 
 			<WinnerModal
 				isOpen={isWinner}
@@ -407,6 +387,7 @@ interface Player {
 
 interface PlayerInfoProps {
 	player: Player;
+	isTurn?: boolean;
 	isCurrentPlayer: boolean;
 	isCardFilled: boolean;
 	linesCompleted: number;
@@ -414,32 +395,39 @@ interface PlayerInfoProps {
 
 function PlayerInfo({
 	player,
-	isCurrentPlayer,
 	isCardFilled,
+	isTurn,
+	isCurrentPlayer,
 	linesCompleted,
 }: PlayerInfoProps) {
 	const bingoLetters = ["B", "I", "N", "G", "O"];
 	return (
-		<div className="flex flex-col items-center space-y-2 w-full max-w-[120px]">
-			<Avatar className="h-16 w-16">
-				<AvatarImage src={player.image} alt={player.name} />
-				<AvatarFallback>{player.name[0].toUpperCase()}</AvatarFallback>
+		<div
+			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border bg-card ${isCurrentPlayer ? "rounded-t-md" : "rounded-b-md"} md:rounded-md ${isTurn && "border-primary border-2"}`}
+		>
+			<Avatar className="h-10 w-10">
+				<AvatarImage
+					src={player ? player.image : ""}
+					alt={player ? player.name : "Opponent"}
+				/>
+				<AvatarFallback>
+					{player ? player.name[0].toUpperCase() : "O"}
+				</AvatarFallback>
 			</Avatar>
-			<div className="text-center w-full">
-				<p className="font-semibold text-sm truncate" title={player.name}>
-					{player.name}
-				</p>
-				<p className="text-xs text-muted-foreground">
-					{isCurrentPlayer ? "You" : "Opponent"}
-				</p>
-				<p className="text-xs font-medium">
-					{isCardFilled ? (
-						<span className="text-green-500">Card Filled</span>
-					) : (
-						<span className="text-yellow-500">Filling Card...</span>
-					)}
-				</p>
-				<div className="flex justify-center items-center space-x-2">
+			<div className="w-full flex md:flex-col md:text-center justify-between items-center">
+				<div>
+					<p className="font-semibold text-sm truncate">
+						{player ? player.name : "Opponent"}
+					</p>
+					<p className="text-xs font-medium">
+						{isCardFilled ? (
+							<span className="text-green-500">Card Filled</span>
+						) : (
+							<span className="text-yellow-500">Filling Card...</span>
+						)}
+					</p>
+				</div>
+				<div className="flex justify-center items-center">
 					{bingoLetters.map((letter, index) => (
 						<div
 							key={letter}

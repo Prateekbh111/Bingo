@@ -45,7 +45,7 @@ export class Game {
 						image: player2.image,
 					},
 				},
-			})
+			}),
 		);
 		this.player2.socket.send(
 			JSON.stringify({
@@ -59,7 +59,7 @@ export class Game {
 						image: player1.image,
 					},
 				},
-			})
+			}),
 		);
 	}
 
@@ -71,67 +71,67 @@ export class Game {
 	}
 
 	gameOver(user: User) {
-		if (user.socket == this.player1.socket) {
-			this.player2.socket.send(
-				JSON.stringify({
-					type: GAME_OVER,
-					payload: {
-						winnerName: user.name,
-					},
-				})
-			);
-		} else {
-			this.player1.socket.send(
-				JSON.stringify({
-					type: GAME_OVER,
-					payload: {
-						winnerName: user.name,
-					},
-				})
-			);
-		}
+		this.player2.socket.send(
+			JSON.stringify({
+				type: GAME_OVER,
+				payload: {
+					winnerName: user.name,
+				},
+			}),
+		);
+		this.player1.socket.send(
+			JSON.stringify({
+				type: GAME_OVER,
+				payload: {
+					winnerName: user.name,
+				},
+			}),
+		);
 	}
 
 	makeMove(user: User, move: number) {
-		if (user.socket == this.player1.socket) {
-			this.markNumber("player1", move);
-			const linesCompleted = this.calculateLinesCompleted("player1");
+		this.markNumber(move);
+		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
+		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
+
+		if (linesCompletedByPlayer1 === 5 && user.id === this.player1.id) {
+			this.gameOver(this.player1);
+		} else if (linesCompletedByPlayer2 === 5 && user.id === this.player2.id) {
+			this.gameOver(this.player2);
+		} else if (user.id === this.player1.id) {
 			this.player2.socket.send(
 				JSON.stringify({
 					type: MOVE,
 					payload: {
 						number: move,
-						linesCompleted,
+						linesCompleted: linesCompletedByPlayer1,
 					},
-				})
+				}),
 			);
-		} else if (user.socket === this.player2.socket) {
-			this.markNumber("player2", move);
-			const linesCompleted = this.calculateLinesCompleted("player2");
+		} else if (user.id === this.player2.id) {
 			this.player1.socket.send(
 				JSON.stringify({
 					type: MOVE,
 					payload: {
 						number: move,
-						linesCompleted,
+						linesCompleted: linesCompletedByPlayer2,
 					},
-				})
+				}),
 			);
 		}
 	}
 
-	private markNumber(playerName: string, number: number) {
+	private markNumber(number: number) {
 		this.board1 = this.board1.map((row) =>
 			row.map((cell) =>
-				cell.number === number ? { ...cell, marked: true } : cell
-			)
+				cell.number === number ? { ...cell, marked: true } : cell,
+			),
 		);
 		this.board2 = this.board2.map((row) =>
 			row.map((cell) =>
-				cell.number === number ? { ...cell, marked: true } : cell
-			)
+				cell.number === number ? { ...cell, marked: true } : cell,
+			),
 		);
-		console.log(playerName === "player1" ? this.board1 : this.board2);
 	}
 
 	private calculateLinesCompleted(playerName: string) {

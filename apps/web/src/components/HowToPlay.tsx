@@ -15,7 +15,7 @@ export default function HowToPlay({ session }: { session: Session }) {
 						<li>Listen for the caller to announce numbers</li>
 						<li>Mark off the numbers on your card as they&apos;re called</li>
 						<li>
-							Shout &quot;BINGO!&qout; when you complete a winning pattern
+							Shout &quot;BINGO!&quot; when you complete a winning pattern
 						</li>
 						<li>Verify your win and collect your prize!</li>
 					</ol>

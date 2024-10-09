@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { GAME_OVER, GRID_FILLED, INIT_GAME, MOVE } from "./messages";
+import { GRID_FILLED, INIT_GAME, MOVE } from "./messages";
 import { Game } from "./Game";
 
 interface User {
@@ -69,17 +69,6 @@ export class BingoManager {
 						}),
 					);
 				}
-			}
-			if (message.type == GAME_OVER) {
-				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user,
-				);
-				if (game) {
-					game.gameOver(user);
-				}
-				this.games = this.games.filter(
-					(game) => game.player1 === user || game.player2 === user,
-				);
 			}
 
 			if (message.type == MOVE) {

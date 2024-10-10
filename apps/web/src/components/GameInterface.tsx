@@ -26,6 +26,12 @@ type User = {
 type Payload = {
 	playerNumber?: string;
 	otherPlayer?: User;
+	board?: BingoCell[][];
+	cardFilled?: boolean;
+	opponentCardFilled?: boolean;
+	turn?: string;
+	linesCompleted?: number;
+	opponentLinesCompleted?: number;
 };
 
 export const INIT_GAME = "init_game";
@@ -33,6 +39,7 @@ export const MOVE = "move";
 export const GRID_FILLED = "grid_filled";
 export const BEGIN_GAME = "begin_game";
 export const GAME_OVER = "game_over";
+export const RECONNECT = "reconnect";
 
 export default function GameInterface({
 	friends,
@@ -43,7 +50,6 @@ export default function GameInterface({
 	session: Session;
 	sessionToken: string | undefined;
 }) {
-	// const sound = new Audio("/sound.wav");
 	const { toast } = useToast();
 	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
@@ -68,7 +74,7 @@ export default function GameInterface({
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		newSocket.onmessage = handleSocketMessage;
@@ -93,6 +99,7 @@ export default function GameInterface({
 
 	const handleSocketMessage = async (message: MessageEvent) => {
 		const messageJson = JSON.parse(message.data);
+		console.log(messageJson.type);
 		switch (messageJson.type) {
 			case INIT_GAME:
 				handleInitGame(messageJson.payload);
@@ -114,6 +121,10 @@ export default function GameInterface({
 					setIsLoser(true);
 				}
 				break;
+			case RECONNECT:
+				console.log(messageJson);
+				handleReconnectGame(messageJson.payload);
+				break;
 		}
 	};
 
@@ -122,13 +133,27 @@ export default function GameInterface({
 		setOpponent(payload.otherPlayer);
 		setIsGameStarted(true);
 		setDisabled(false);
-		// sound.play();
 	};
 
 	const handleMove = (number: number) => {
 		markNumber(number);
 		setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
 	};
+
+	function handleReconnectGame(payload: Payload) {
+		//TODO: next number state is doing some issue will look into in tommorow
+		setPlayerNumber(payload.playerNumber!);
+		setOpponent(payload.otherPlayer);
+		setIsCardFilled(payload.cardFilled!);
+		setIsOpponentCardFilled(payload.opponentCardFilled!);
+		setCard(payload.board!.length === 0 ? generateEmptyCard() : payload.board!);
+		setTurn(payload.turn!);
+		setNextNumber(payload.board!.length === 0 ? 1 : 26);
+		setLinesCompleted(payload.linesCompleted!);
+		setOpponentLinesCompleted(payload.opponentLinesCompleted!);
+		setIsGameStarted(true);
+		setDisabled(false);
+	}
 
 	const generateEmptyCard = (): BingoCell[][] => {
 		return Array(5)
@@ -139,6 +164,27 @@ export default function GameInterface({
 					.map(() => ({ number: null, marked: false })),
 			);
 	};
+
+	function generateRandomBingoGrid(): BingoCell[][] {
+		const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
+
+		for (let i = numbers.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+		}
+
+		const grid: BingoCell[][] = [];
+		for (let i = 0; i < 5; i++) {
+			grid.push(
+				numbers.slice(i * 5, i * 5 + 5).map((number) => ({
+					number,
+					marked: false,
+				})),
+			);
+		}
+		setNextNumber(26);
+		return grid;
+	}
 
 	const resetGame = () => {
 		setCard(generateEmptyCard());
@@ -241,9 +287,9 @@ export default function GameInterface({
 						linesCompleted={linesCompleted}
 					/>
 				)}
-				<div className="max-w-sm w-full">
+				<div className="max-w-sm w-full flex flex-col items-center justify-center gap-4">
 					<Card
-						className={`w-full dark:bg-card bg-neutral-100 ${isGameStarted && "rounded-none md:rounded-md"}`}
+						className={`w-full dark:bg-card bg-neutral-100 border-2 ${isGameStarted && "rounded-none md:rounded-md"}`}
 					>
 						<CardContent className="p-4">
 							<div
@@ -287,6 +333,14 @@ export default function GameInterface({
 							</div>
 						</CardContent>
 					</Card>
+					{isGameStarted && !isCardFilled && (
+						<Button
+							className="hidden md:block opacity-0 md:opacity-100"
+							onClick={() => setCard(generateRandomBingoGrid())}
+						>
+							Fill randomly
+						</Button>
+					)}
 				</div>
 				{isGameStarted && (
 					<PlayerInfo
@@ -298,7 +352,14 @@ export default function GameInterface({
 					/>
 				)}
 			</div>
-
+			{isGameStarted && !isCardFilled && (
+				<Button
+					className="block md:hidden opacity-100 md:opacity-0"
+					onClick={() => setCard(generateRandomBingoGrid())}
+				>
+					Fill randomly
+				</Button>
+			)}
 			{!isGameStarted && (
 				<div className="md:pt-24 flex justify-center items-center h-full w-full">
 					<div className="max-w-sm w-full">
@@ -403,7 +464,7 @@ function PlayerInfo({
 	const bingoLetters = ["B", "I", "N", "G", "O"];
 	return (
 		<div
-			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border bg-card ${isCurrentPlayer ? "rounded-t-md" : "rounded-b-md"} md:rounded-md ${isTurn && "border-primary border-2"}`}
+			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border-2 bg-card ${isCurrentPlayer ? "rounded-t-md border-b-0 md:border-b-2" : "rounded-b-md border-t-0 md:border-t-2"} md:rounded-md  ${isTurn && isCurrentPlayer && "border-2 border-t-primary "} ${isTurn && !isCurrentPlayer && " border-2 border-b-primary md:border-t-primary md:border-b-card"}`}
 		>
 			<Avatar className="h-10 w-10">
 				<AvatarImage

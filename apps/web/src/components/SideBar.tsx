@@ -10,6 +10,8 @@ import { Session } from "next-auth";
 import prisma from "@/lib/prisma";
 import AddFriend from "./AddFriend";
 import PendingRequests from "./PendingRequests";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default async function Sidebar({ session }: { session: Session }) {
 	const allFriendRequests = await prisma.friendRequest.findMany({
@@ -46,31 +48,29 @@ export default async function Sidebar({ session }: { session: Session }) {
 			</SheetTrigger>
 			<SheetContent side={"left"} className="w-64 h-full">
 				<SheetTitle></SheetTitle>
-				<div className="bg-background border-r p-6 flex flex-col justify-between h-full w-full">
-					<div>
-						<div className="flex items-center gap-3 mb-6">
-							<Avatar className="w-10 h-10">
+				<div className="bg-background border-r p-6 flex flex-col h-full w-full">
+					<Link href={"/profile"}>
+						<Button className="w-full flex justify-start items-center gap-3 mb-6 py-6 bg-backgroud hover:bg-secondary">
+							<Avatar className="w-8 h-8">
 								<AvatarImage src={session?.user.image ?? ""} />
 								<AvatarFallback>
 									{session?.user.name ? session.user.name[0] : "?"}
 								</AvatarFallback>{" "}
 							</Avatar>
 							<div>
-								<div className="font-medium">
+								<div className="font-medium text-foreground">
 									{session?.user.name ?? "Unknown User"}
 								</div>
-								<div className="text-sm text-muted-foreground">Online</div>
 							</div>
-						</div>
-						<nav className="space-y-2">
-							<AddFriend />
-							<PendingRequests
-								friendRequests={friendRequests}
-								session={session!}
-							/>
-						</nav>
-					</div>
-					<div className="flex items-center gap-2"></div>
+						</Button>
+					</Link>
+					<nav className="space-y-2">
+						<AddFriend />
+						<PendingRequests
+							friendRequests={friendRequests}
+							session={session!}
+						/>
+					</nav>
 				</div>
 			</SheetContent>
 		</Sheet>

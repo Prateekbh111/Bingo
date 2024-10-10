@@ -37,6 +37,13 @@ export class BingoManager {
 			console.log(message.type);
 
 			if (message.type == INIT_GAME) {
+				const game = this.games.find(
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
+				);
+
+				if (game) {
+					game.reconnect(user);
+				}
 				if (this.pendingUser && this.pendingUser.id !== user.id) {
 					const game = new Game(this.pendingUser, user);
 					this.games.push(game);
@@ -48,21 +55,21 @@ export class BingoManager {
 
 			if (message.type == GRID_FILLED) {
 				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user,
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
 				const board = message.payload.board;
 
-				if (user == game?.player1) {
+				if (user.id == game?.player1.id) {
 					game.setBoard1(board);
-					game.board1Filled = true;
+					game.isPlayer1GridFilled = true;
 					game.player2.socket.send(
 						JSON.stringify({
 							type: GRID_FILLED,
 						}),
 					);
-				} else if (user == game?.player2) {
+				} else if (user.id == game?.player2.id) {
 					game.setBoard2(board);
-					game.board2Filled = true;
+					game.isPlayer2GridFilled = true;
 					game.player1.socket.send(
 						JSON.stringify({
 							type: GRID_FILLED,
@@ -73,11 +80,17 @@ export class BingoManager {
 
 			if (message.type == MOVE) {
 				const game = this.games.find(
-					(game) => game.player1 === user || game.player2 === user,
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
+				if (!game) console.log("Game not found!!!");
 
-				if (game) {
-					game.makeMove(user, message.payload.number);
+				game!.makeMove(user, message.payload.number);
+				if (game!.isGameOver) {
+					this.games = this.games.filter(
+						(g) =>
+							g.player1.id !== game!.player1.id ||
+							g.player2.id !== game!.player2.id,
+					);
 				}
 			}
 		});

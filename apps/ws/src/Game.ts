@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { GAME_OVER, INIT_GAME, MOVE } from "./messages";
+import { GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
 type BingoCell = {
 	number: number;
@@ -19,9 +19,10 @@ export class Game {
 	public player2: User;
 	public board1: BingoCell[][];
 	public board2: BingoCell[][];
-	public board1Filled: boolean;
-	public board2Filled: boolean;
+	public isPlayer1GridFilled: boolean;
+	public isPlayer2GridFilled: boolean;
 	public turn: string;
+	public isGameOver: boolean;
 	private startTime: Date;
 
 	constructor(player1: User, player2: User) {
@@ -29,10 +30,11 @@ export class Game {
 		this.player2 = player2;
 		this.board1 = [];
 		this.board2 = [];
-		this.board1Filled = false;
-		this.board2Filled = false;
+		this.isPlayer1GridFilled = false;
+		this.isPlayer2GridFilled = false;
 		this.turn = "player1";
 		this.startTime = new Date();
+		this.isGameOver = false;
 		this.player1.socket.send(
 			JSON.stringify({
 				type: INIT_GAME,
@@ -71,6 +73,7 @@ export class Game {
 	}
 
 	gameOver(user: User) {
+		this.isGameOver = true;
 		this.player2.socket.send(
 			JSON.stringify({
 				type: GAME_OVER,
@@ -119,6 +122,41 @@ export class Game {
 				}),
 			);
 		}
+		this.turn = this.turn === "player1" ? "player2" : "player1";
+	}
+
+	reconnect(user: User) {
+		const isPlayer1 = user.id === this.player1.id;
+		if (isPlayer1) this.player1.socket = user.socket;
+		else this.player2.socket = user.socket;
+		user.socket.send(
+			JSON.stringify({
+				type: RECONNECT,
+				payload: {
+					playerNumber: isPlayer1 ? "player1" : "player2",
+					otherPlayer: {
+						id: isPlayer1 ? this.player2.id : this.player1.id,
+						name: isPlayer1 ? this.player2.name : this.player1.name,
+						email: isPlayer1 ? this.player2.email : this.player1.email,
+						image: isPlayer1 ? this.player2.image : this.player1.image,
+					},
+					board: isPlayer1 ? this.board1 : this.board2,
+					turn: this.turn,
+					cardFilled: isPlayer1
+						? this.isPlayer1GridFilled
+						: this.isPlayer2GridFilled,
+					opponentCardFilled: isPlayer1
+						? this.isPlayer2GridFilled
+						: this.isPlayer1GridFilled,
+					linesCompleted: isPlayer1
+						? this.calculateLinesCompleted("player1")
+						: this.calculateLinesCompleted("player2"),
+					opponentLinesCompleted: isPlayer1
+						? this.calculateLinesCompleted("player2")
+						: this.calculateLinesCompleted("player1"),
+				},
+			}),
+		);
 	}
 
 	private markNumber(number: number) {
@@ -136,6 +174,7 @@ export class Game {
 
 	private calculateLinesCompleted(playerName: string) {
 		const board = playerName === "player1" ? this.board1 : this.board2;
+		if (board.length === 0) return 0;
 
 		let linesCompleted = 0;
 		const size = board.length;

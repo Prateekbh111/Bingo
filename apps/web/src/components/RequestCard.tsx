@@ -31,7 +31,7 @@ export function RequestCard({
 			setUserFriendRequests((prevRequests) =>
 				prevRequests.filter((request) => request.id !== friendData.id),
 			);
-		} catch (error) {
+		} catch {
 			toast({
 				title: "Uh oh! Something went wrong.",
 				description: "There was a problem with your request.",
@@ -56,7 +56,7 @@ export function RequestCard({
 			setUserFriendRequests((prevRequests) =>
 				prevRequests.filter((request) => request.id !== friendData.id),
 			);
-		} catch (error) {
+		} catch {
 			toast({
 				title: "Uh oh! Something went wrong.",
 				description: "There was a problem with your request.",
@@ -75,7 +75,6 @@ export function RequestCard({
 				<p className="text-2xl font-semibold leading-none tracking-tight">
 					{friendRequest.name}
 				</p>
-				<p className="text-sm text-muted-foreground">{friendRequest.email}</p>
 			</div>
 			<div className="flex space-x-4">
 				<Button onClick={() => handleAcceptRequest(friendRequest!)}>

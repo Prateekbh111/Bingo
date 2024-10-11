@@ -24,11 +24,11 @@ export default function AddFriend() {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const formDataObject = Object.fromEntries(formData.entries());
-
+		console.log(formDataObject.username);
 		try {
 			setIsSendingRequest(true);
 			const response = await axios.post<ApiResponse>("/api/sendFriendRequest", {
-				friendEmail: formDataObject.email,
+				friendUsername: formDataObject.username,
 			});
 			toast({
 				title: "Success",
@@ -71,14 +71,18 @@ export default function AddFriend() {
 						<CardHeader>
 							<CardTitle>Add Friend</CardTitle>
 							<CardDescription>
-								Add friend using email to start chat with.
+								Add friend using username to play bingo.
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
 							<form onSubmit={(e) => handleSubmit(e)}>
 								<div className="flex flex-col space-y-1.5">
-									<Label htmlFor="email">Email</Label>
-									<Input name="email" id="email" placeholder="Friend's email" />
+									<Label htmlFor="username">Username</Label>
+									<Input
+										name="username"
+										id="username"
+										placeholder="Friend's username"
+									/>
 								</div>
 								<div className="flex justify-end mt-4">
 									<Button type="submit">

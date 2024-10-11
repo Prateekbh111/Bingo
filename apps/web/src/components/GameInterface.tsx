@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Session } from "next-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, LoaderCircle, LoaderCircleIcon, Users } from "lucide-react";
+import {
+	Check,
+	Gamepad2,
+	LoaderCircle,
+	LoaderCircleIcon,
+	Users,
+} from "lucide-react";
 import WinnerModal from "./Winner_modal";
 import LoserModal from "./Loser_modal";
+import { ToastAction } from "./ui/toast";
+
+const GAME_TIME_MS = 2 * 60 * 1000;
 
 type BingoCell = {
 	number: number | null;
@@ -19,7 +28,7 @@ type BingoCell = {
 type User = {
 	id: string;
 	name: string;
-	email: string;
+	username: string;
 	image: string;
 };
 
@@ -40,6 +49,9 @@ export const GRID_FILLED = "grid_filled";
 export const BEGIN_GAME = "begin_game";
 export const GAME_OVER = "game_over";
 export const RECONNECT = "reconnect";
+export const GAME_INVITE = "game_invite";
+export const SEND_GAME_INVITE = "send_game_invite";
+export const ACCEPT_GAME_INVITE = "accept_game_invite";
 
 export default function GameInterface({
 	friends,
@@ -60,7 +72,7 @@ export default function GameInterface({
 		useState<number>(0);
 	const [linesCompleted, setLinesCompleted] = useState<number>(0);
 	const [nextNumber, setNextNumber] = useState<number>(1);
-	const [socket, setSocket] = useState<WebSocket | null>(null);
+	const socketRef = useRef<WebSocket | null>(null);
 	const [userFriends] = useState<Friend[]>(friends);
 	const [disabled, setDisabled] = useState<boolean>(false);
 	const [opponent, setOpponent] = useState<User | null>();
@@ -77,10 +89,16 @@ export default function GameInterface({
 			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
+		socketRef.current = newSocket;
 		newSocket.onmessage = handleSocketMessage;
-		setSocket(newSocket);
+		newSocket.onerror = () => console.error("WebSocket connection error");
 
-		return () => newSocket.close();
+		return () => {
+			if (newSocket.readyState === WebSocket.OPEN) {
+				newSocket.close();
+				console.log("WebSocket connection closed");
+			}
+		};
 	}, []);
 
 	useEffect(() => {
@@ -90,25 +108,46 @@ export default function GameInterface({
 	useEffect(() => {
 		setLinesCompleted(checkBingoWin(card));
 		if (!isCardFilled && nextNumber > 25) {
-			socket?.send(
+			socketRef.current?.send(
 				JSON.stringify({ type: GRID_FILLED, payload: { board: card } }),
 			);
 			setIsCardFilled(true);
 		}
-	}, [nextNumber, isCardFilled, card, socket]);
+	}, [nextNumber, isCardFilled, card]);
 
-	const handleSocketMessage = async (message: MessageEvent) => {
+	function generateEmptyCard(): BingoCell[][] {
+		return Array(5)
+			.fill(null)
+			.map(() =>
+				Array(5)
+					.fill(null)
+					.map(() => ({ number: null, marked: false })),
+			);
+	}
+
+	if (!socketRef || card.length === 0) {
+		return (
+			<div className="min-h-screen flex justify-center items-center">
+				<div className="flex justify-center items-center gap-2 text-3xl font-bold">
+					Loading <LoaderCircleIcon className="animate-spin" />
+				</div>
+			</div>
+		);
+	}
+
+	async function handleSocketMessage(message: MessageEvent) {
 		const messageJson = JSON.parse(message.data);
 		console.log(messageJson.type);
 		switch (messageJson.type) {
 			case INIT_GAME:
 				handleInitGame(messageJson.payload);
 				break;
+			case GAME_INVITE:
+				handleGameInvite(messageJson.payload);
 			case GRID_FILLED:
 				setIsOpponentCardFilled(true);
 				break;
 			case MOVE:
-				console.log(messageJson.payload);
 				handleMove(messageJson.payload.number);
 				setOpponentLinesCompleted(messageJson.payload.linesCompleted);
 				break;
@@ -122,26 +161,24 @@ export default function GameInterface({
 				}
 				break;
 			case RECONNECT:
-				console.log(messageJson);
 				handleReconnectGame(messageJson.payload);
 				break;
 		}
-	};
+	}
 
-	const handleInitGame = (payload: Payload) => {
+	function handleInitGame(payload: Payload) {
 		setPlayerNumber(payload.playerNumber!);
 		setOpponent(payload.otherPlayer);
 		setIsGameStarted(true);
 		setDisabled(false);
-	};
+	}
 
-	const handleMove = (number: number) => {
+	function handleMove(number: number) {
 		markNumber(number);
 		setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
-	};
+	}
 
 	function handleReconnectGame(payload: Payload) {
-		//TODO: next number state is doing some issue will look into in tommorow
 		setPlayerNumber(payload.playerNumber!);
 		setOpponent(payload.otherPlayer);
 		setIsCardFilled(payload.cardFilled!);
@@ -155,15 +192,42 @@ export default function GameInterface({
 		setDisabled(false);
 	}
 
-	const generateEmptyCard = (): BingoCell[][] => {
-		return Array(5)
-			.fill(null)
-			.map(() =>
-				Array(5)
-					.fill(null)
-					.map(() => ({ number: null, marked: false })),
-			);
-	};
+	function handleGameInvite(payload: Payload) {
+		const otherPlayer = payload.otherPlayer;
+		toast({
+			description: (
+				<div className="flex items-center space-x-4 mb-4">
+					<Avatar>
+						<AvatarImage src={otherPlayer?.image} alt={otherPlayer?.name} />
+						<AvatarFallback>{otherPlayer?.name}</AvatarFallback>
+					</Avatar>
+					<div className="grid gap-1">
+						<p className="font-medium">Bingo Invite</p>
+						<p className="text-sm text-muted-foreground">
+							{otherPlayer?.name} has invited you to play Bingo!
+						</p>
+					</div>
+				</div>
+			),
+			action: (
+				<ToastAction
+					altText="Accept game invite"
+					onClick={() => {
+						socketRef.current!.send(
+							JSON.stringify({
+								type: ACCEPT_GAME_INVITE,
+								payload: { otherPlayer },
+							}),
+						);
+					}}
+				>
+					<Check className="w-4 h-4 mr-1" />
+					Accept
+				</ToastAction>
+			),
+			duration: 5000,
+		});
+	}
 
 	function generateRandomBingoGrid(): BingoCell[][] {
 		const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -186,7 +250,7 @@ export default function GameInterface({
 		return grid;
 	}
 
-	const resetGame = () => {
+	function resetGame() {
 		setCard(generateEmptyCard());
 		setNextNumber(1);
 		setIsCardFilled(false);
@@ -199,9 +263,9 @@ export default function GameInterface({
 		setIsGameStarted(false);
 		setIsWinner(false);
 		setIsLoser(false);
-	};
+	}
 
-	const markNumber = (number: number) => {
+	function markNumber(number: number) {
 		setCard((prevCard) =>
 			prevCard.map((row) =>
 				row.map((cell) =>
@@ -209,9 +273,9 @@ export default function GameInterface({
 				),
 			),
 		);
-	};
+	}
 
-	const handleCellClick = (row: number, col: number) => {
+	function handleCellClick(row: number, col: number) {
 		if (card[row][col].number === null && nextNumber <= 25) {
 			setCard((prevCard) => {
 				const newCard = [...prevCard];
@@ -229,7 +293,7 @@ export default function GameInterface({
 				return;
 			}
 
-			socket?.send(
+			socketRef.current?.send(
 				JSON.stringify({
 					type: MOVE,
 					payload: { number: card[row][col].number },
@@ -242,33 +306,30 @@ export default function GameInterface({
 			});
 			setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
 		}
-	};
+	}
 
-	const handleRandomGameSelect = () => {
+	function handleRandomGameSelect() {
 		setDisabled(true);
-		socket?.send(JSON.stringify({ type: INIT_GAME }));
-	};
+		socketRef.current?.send(JSON.stringify({ type: INIT_GAME }));
+	}
 
-	const updateCellSize = (containerWidth: number) => {
+	function updateCellSize(containerWidth: number) {
 		const newSize = Math.floor((containerWidth - 30) / 5);
 		setCellSize(Math.max(newSize, 56));
-	};
+	}
 
-	const handlePlayAgain = () => {
+	function handlePlayAgain() {
 		setIsWinner(false);
 		setIsLoser(false);
 		setWinnerName("");
 		resetGame();
-	};
+	}
 
-	if (!socket || !card)
-		return (
-			<div className="min-h-screen flex justify-center items-center">
-				<div className="flex justify-center items-center gap-2 text-3xl font-bold">
-					Loading <LoaderCircleIcon className="animate-spin" />
-				</div>
-			</div>
+	function handlePlayWithFriend(friendId: string) {
+		socketRef.current?.send(
+			JSON.stringify({ type: SEND_GAME_INVITE, payload: { friendId } }),
 		);
+	}
 
 	return (
 		<div className="bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full">
@@ -278,7 +339,7 @@ export default function GameInterface({
 						player={{
 							id: session.user.id,
 							name: "You",
-							email: session.user.email!,
+							username: session.user.username!,
 							image: session.user.image!,
 						}}
 						isTurn={turn === playerNumber}
@@ -403,11 +464,13 @@ export default function GameInterface({
 														</Avatar>
 														<div className="flex-1">
 															<h3 className="font-semibold">{user.name}</h3>
-															<p className="text-sm text-muted-foreground">
-																{user.email}
-															</p>
+															<p>{user.username}</p>
 														</div>
-														<Button disabled={disabled} size="sm">
+														<Button
+															disabled={disabled}
+															size="sm"
+															onClick={() => handlePlayWithFriend(user.id!)}
+														>
 															Play
 														</Button>
 													</div>
@@ -442,7 +505,7 @@ export default function GameInterface({
 interface Player {
 	id: string;
 	name: string;
-	email: string;
+	username: string;
 	image: string;
 }
 
@@ -462,6 +525,21 @@ function PlayerInfo({
 	linesCompleted,
 }: PlayerInfoProps) {
 	const bingoLetters = ["B", "I", "N", "G", "O"];
+
+	const getTimer = (timeConsumed: number) => {
+		const timeLeftMs = GAME_TIME_MS - timeConsumed;
+		const minutes = Math.floor(timeLeftMs / (1000 * 60));
+		const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+
+		return (
+			<div className="bg-secondary text-foreground p-2 rounded-md my-2">
+				{minutes < 10 ? "0" : ""}
+				{minutes}:{remainingSeconds < 10 ? "0" : ""}
+				{remainingSeconds}
+			</div>
+		);
+	};
+
 	return (
 		<div
 			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border-2 bg-card ${isCurrentPlayer ? "rounded-t-md border-b-0 md:border-b-2" : "rounded-b-md border-t-0 md:border-t-2"} md:rounded-md  ${isTurn && isCurrentPlayer && "border-2 border-t-primary "} ${isTurn && !isCurrentPlayer && " border-2 border-b-primary md:border-t-primary md:border-b-card"}`}
@@ -488,6 +566,7 @@ function PlayerInfo({
 						)}
 					</p>
 				</div>
+				{getTimer(100)}
 				<div className="flex justify-center items-center">
 					{bingoLetters.map((letter, index) => (
 						<div

@@ -5,7 +5,7 @@ import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 
 export async function POST(req: Request) {
-	const { friendEmail } = await req.json();
+	const { friendUsername }: { friendUsername: string } = await req.json();
 	const session = await getServerSession(authOptions);
 
 	if (!session) {
@@ -16,33 +16,35 @@ export async function POST(req: Request) {
 	}
 
 	//TODO: delete this three line
-	const userEmail = session?.user.email;
-	console.log("user Email: ", userEmail);
-	console.log("friend Email", friendEmail);
+	const currUsername = session.user.username;
+	console.log("user Email: ", currUsername);
+	console.log("friend Email", friendUsername);
 
 	console.log("userId: ", session.user.id);
 
-	if (userEmail === friendEmail) {
+	if (currUsername === friendUsername) {
 		return Response.json(
 			{ success: false, message: "Can't send request to yourself." },
 			{ status: 400 },
 		);
 	}
-	const userToAdd = await prisma.user.findUnique({
+	const userToAdd = await prisma.user.findFirst({
 		where: {
-			email: friendEmail,
+			username: friendUsername,
 		},
 		select: {
 			id: true,
 		},
 	});
 
+	console.log(userToAdd);
+
 	const idToAdd = userToAdd?.id;
 
 	console.log("idToAdd: ", idToAdd);
 	if (!idToAdd) {
 		return Response.json(
-			{ success: false, message: "User with this email does not exits." },
+			{ success: false, message: "User with this username does not exits." },
 			{ status: 400 },
 		);
 	}
@@ -84,7 +86,7 @@ export async function POST(req: Request) {
 		{
 			id: session.user.id,
 			name: session.user.name,
-			email: session.user.email,
+			username: session.user.username,
 			image: session.user.image,
 		},
 	);

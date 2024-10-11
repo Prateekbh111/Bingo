@@ -1,12 +1,19 @@
 import { WebSocket } from "ws";
-import { GRID_FILLED, INIT_GAME, MOVE } from "./messages";
+import {
+	ACCEPT_GAME_INVITE,
+	SEND_GAME_INVITE,
+	GRID_FILLED,
+	INIT_GAME,
+	MOVE,
+	GAME_INVITE,
+} from "./messages";
 import { Game } from "./Game";
 
 interface User {
 	id: string;
 	name: string;
+	username: string;
 	image: string;
-	email: string;
 	socket: WebSocket;
 }
 
@@ -37,12 +44,13 @@ export class BingoManager {
 			console.log(message.type);
 
 			if (message.type == INIT_GAME) {
-				const game = this.games.find(
+				const existingGame = this.games.find(
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
 
-				if (game) {
-					game.reconnect(user);
+				if (existingGame) {
+					existingGame.reconnect(user);
+					return;
 				}
 				if (this.pendingUser && this.pendingUser.id !== user.id) {
 					const game = new Game(this.pendingUser, user);
@@ -51,6 +59,77 @@ export class BingoManager {
 				} else {
 					this.pendingUser = user;
 				}
+			}
+
+			if (message.type == SEND_GAME_INVITE) {
+				const existingGame = this.games.find(
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
+				);
+
+				if (existingGame) {
+					existingGame.reconnect(user);
+					return;
+				}
+				const friendId = message.payload.friendId;
+				let sent = false;
+				this.users.map((activeUser) => {
+					if (activeUser.id == friendId) {
+						activeUser.socket.send(
+							JSON.stringify({
+								type: GAME_INVITE,
+								payload: {
+									otherPlayer: {
+										id: user.id,
+										name: user.name,
+										username: user.username,
+										image: user.image,
+									},
+								},
+							}),
+						);
+						sent = true;
+					}
+				});
+
+				if (!sent) {
+					//TODO: handle game invite not send here
+				}
+			}
+
+			if (message.type == ACCEPT_GAME_INVITE) {
+				const existingGame = this.games.find(
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
+				);
+
+				if (existingGame) {
+					existingGame.reconnect(user);
+					return;
+				}
+				const otherPlayer = message.payload.otherPlayer;
+				let otherPlayerSocket = null;
+				this.users.map((activeUser) => {
+					if (activeUser.id == otherPlayer.id) {
+						otherPlayerSocket = activeUser.socket;
+					}
+				});
+
+				if (!otherPlayerSocket) {
+					console.log("returing");
+					//TODO: handle other user not availble
+					return;
+				}
+
+				const opponent: User = {
+					id: otherPlayer.id,
+					name: otherPlayer.name,
+					username: otherPlayer.username,
+					image: otherPlayer.image,
+					socket: otherPlayerSocket,
+				};
+
+				console.log(opponent);
+				const game = new Game(user, opponent);
+				this.games.push(game);
 			}
 
 			if (message.type == GRID_FILLED) {
@@ -86,11 +165,7 @@ export class BingoManager {
 
 				game!.makeMove(user, message.payload.number);
 				if (game!.isGameOver) {
-					this.games = this.games.filter(
-						(g) =>
-							g.player1.id !== game!.player1.id ||
-							g.player2.id !== game!.player2.id,
-					);
+					this.games = this.games.filter((g) => !g.isGameOver);
 				}
 			}
 		});

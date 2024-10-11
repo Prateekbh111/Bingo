@@ -14,14 +14,14 @@ export default function ThemeSwitch() {
 	if (!mounted) return null;
 	return (
 		<div className="flex gap-2 lg:gap-4">
-			<Sun className={`${theme === "light" && "text-green-500"}`} />
+			<Sun className={`${theme === "light" && "text-primary"}`} />
 			<Switch
 				checked={theme == "dark"}
 				onCheckedChange={() => {
 					setTheme(theme === "dark" ? "light" : "dark");
 				}}
 			/>
-			<Moon className={`${theme === "dark" && "text-green-500"}`} />
+			<Moon className={`${theme === "dark" && "text-primmary"}`} />
 		</div>
 	);
 }

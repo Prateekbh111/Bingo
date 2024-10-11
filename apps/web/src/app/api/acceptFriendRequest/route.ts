@@ -36,12 +36,16 @@ export async function POST(req: Request) {
 				friendId: requestUserData.id!,
 			},
 		});
+
+		console.log(isAlreadyFriend);
 		if (isAlreadyFriend) {
 			return Response.json(
 				{ success: false, message: "Already are friends" },
 				{ status: 402 },
 			);
 		}
+
+		console.log("helaosdfasdf");
 
 		await pusherServer.trigger(
 			toPusherKey(`user:${session.user.id}:friends`),
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
 			{
 				id: session.user.id,
 				name: session.user.name,
-				email: session.user.email,
+				username: session.user.username,
 				image: session.user.image,
 			},
 		);

@@ -1,20 +1,20 @@
 interface User {
 	id: string | null;
 	name: string | null;
+	username: string | null;
 	email: string | null;
 	image: string | null;
-	password: string | null;
 }
 interface FriendRequest {
 	id: string | null;
 	name?: string | null;
-	email?: string | null;
+	username?: string | null;
 	image?: string | null;
 }
 interface Friend {
 	id: string | null;
 	name: string | null;
-	email: string | null;
+	username: string | null;
 	image: string | null;
 }
 

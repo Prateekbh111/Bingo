@@ -21,7 +21,7 @@ export default function Navbar({
 						href={"/"}
 						className="text-3xl md:text-3xl font-bold tracking-tight text-foreground "
 					>
-						<span className="text-green-500">B</span>
+						<span className="text-primary">B</span>
 						ingo
 					</Link>
 					<div className="flex items-center gap-2 lg:gap-8">

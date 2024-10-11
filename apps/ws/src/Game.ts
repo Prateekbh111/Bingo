@@ -10,7 +10,6 @@ interface User {
 	id: string;
 	name: string;
 	image: string;
-	email: string;
 	socket: WebSocket;
 }
 
@@ -43,7 +42,6 @@ export class Game {
 					otherPlayer: {
 						id: player2.id,
 						name: player2.name,
-						email: player2.email,
 						image: player2.image,
 					},
 				},
@@ -57,7 +55,6 @@ export class Game {
 					otherPlayer: {
 						id: player1.id,
 						name: player1.name,
-						email: player1.email,
 						image: player1.image,
 					},
 				},
@@ -99,8 +96,10 @@ export class Game {
 
 		if (linesCompletedByPlayer1 === 5 && user.id === this.player1.id) {
 			this.gameOver(this.player1);
+			return;
 		} else if (linesCompletedByPlayer2 === 5 && user.id === this.player2.id) {
 			this.gameOver(this.player2);
+			return;
 		} else if (user.id === this.player1.id) {
 			this.player2.socket.send(
 				JSON.stringify({
@@ -137,7 +136,6 @@ export class Game {
 					otherPlayer: {
 						id: isPlayer1 ? this.player2.id : this.player1.id,
 						name: isPlayer1 ? this.player2.name : this.player1.name,
-						email: isPlayer1 ? this.player2.email : this.player1.email,
 						image: isPlayer1 ? this.player2.image : this.player1.image,
 					},
 					board: isPlayer1 ? this.board1 : this.board2,

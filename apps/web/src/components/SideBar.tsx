@@ -12,6 +12,7 @@ import AddFriend from "./AddFriend";
 import PendingRequests from "./PendingRequests";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import LogoutButton from "./LogoutButton";
 
 export default async function Sidebar({ session }: { session: Session }) {
 	const allFriendRequests = await prisma.friendRequest.findMany({
@@ -23,7 +24,7 @@ export default async function Sidebar({ session }: { session: Session }) {
 				select: {
 					id: true,
 					name: true,
-					email: true,
+					username: true,
 					image: true,
 				},
 			},
@@ -34,7 +35,7 @@ export default async function Sidebar({ session }: { session: Session }) {
 			sender: {
 				id: string | null;
 				name: string | null;
-				email: string | null;
+				username: string | null;
 				image: string | null;
 			};
 		}) => request.sender,
@@ -64,13 +65,16 @@ export default async function Sidebar({ session }: { session: Session }) {
 							</div>
 						</Button>
 					</Link>
-					<nav className="space-y-2">
-						<AddFriend />
-						<PendingRequests
-							friendRequests={friendRequests}
-							session={session!}
-						/>
-					</nav>
+					<div className="w-full h-full flex flex-col justify-between">
+						<nav className="space-y-2">
+							<AddFriend />
+							<PendingRequests
+								friendRequests={friendRequests}
+								session={session!}
+							/>
+						</nav>
+						<LogoutButton />
+					</div>
 				</div>
 			</SheetContent>
 		</Sheet>

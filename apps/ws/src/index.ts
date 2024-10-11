@@ -36,11 +36,14 @@ wss.on("connection", async function connection(ws, req) {
 		id: userSession?.sub!,
 		name: userSession?.name!,
 		image: userSession?.picture!,
-		email: userSession?.email!,
+		username: userSession?.username! as string,
 		socket: ws,
 	};
 	bingoManager.addUser(user);
-	ws.on("disconnect", () => bingoManager.removeUser(ws));
+	ws.on("disconnect", () => {
+		console.log("disconnected");
+		bingoManager.removeUser(ws);
+	});
 });
 
 console.log("done");

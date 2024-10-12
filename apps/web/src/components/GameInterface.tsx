@@ -41,6 +41,8 @@ type Payload = {
 	turn?: string;
 	linesCompleted?: number;
 	opponentLinesCompleted?: number;
+	player1TimeConsumed?: number;
+	player2TimeConsumed?: number;
 };
 
 export const INIT_GAME = "init_game";
@@ -49,6 +51,7 @@ export const GRID_FILLED = "grid_filled";
 export const BEGIN_GAME = "begin_game";
 export const GAME_OVER = "game_over";
 export const RECONNECT = "reconnect";
+export const GAME_TIME = "game_time";
 export const GAME_INVITE = "game_invite";
 export const SEND_GAME_INVITE = "send_game_invite";
 export const ACCEPT_GAME_INVITE = "accept_game_invite";
@@ -72,6 +75,7 @@ export default function GameInterface({
 		useState<number>(0);
 	const [linesCompleted, setLinesCompleted] = useState<number>(0);
 	const [nextNumber, setNextNumber] = useState<number>(1);
+	const [lastNumber, setLastNumber] = useState<number | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 	const [userFriends] = useState<Friend[]>(friends);
 	const [disabled, setDisabled] = useState<boolean>(false);
@@ -79,6 +83,8 @@ export default function GameInterface({
 	const [turn, setTurn] = useState<string>("player1");
 	const [playerNumber, setPlayerNumber] = useState<string | null>(null);
 	const [isCardFilled, setIsCardFilled] = useState<boolean>(false);
+	const [player1TimeConsumed, setPlayer1TimeConsumed] = useState(0);
+	const [player2TimeConsumed, setPlayer2TimeConsumed] = useState(0);
 
 	const [isLoser, setIsLoser] = useState(false);
 	const [isWinner, setIsWinner] = useState(false);
@@ -104,6 +110,43 @@ export default function GameInterface({
 	useEffect(() => {
 		resetGame();
 	}, []);
+
+	useEffect(() => {
+		if (isGameStarted && isCardFilled && isOpponentCardFilled && !winnerName) {
+			const interval = setInterval(() => {
+				if (turn === "player1") {
+					setPlayer1TimeConsumed((p) => p + 100);
+				} else {
+					setPlayer2TimeConsumed((p) => p + 100);
+				}
+			}, 100);
+			if (player1TimeConsumed >= GAME_TIME_MS) {
+				socketRef.current?.send(
+					JSON.stringify({
+						type: GAME_OVER,
+					}),
+				);
+				setPlayer1TimeConsumed(0);
+			}
+			if (player2TimeConsumed >= GAME_TIME_MS) {
+				socketRef.current?.send(
+					JSON.stringify({
+						type: GAME_OVER,
+					}),
+				);
+				setPlayer2TimeConsumed(0);
+			}
+			return () => clearInterval(interval);
+		}
+	}, [
+		isGameStarted,
+		winnerName,
+		isCardFilled,
+		isOpponentCardFilled,
+		opponent,
+		player1TimeConsumed,
+		player2TimeConsumed,
+	]);
 
 	useEffect(() => {
 		setLinesCompleted(checkBingoWin(card));
@@ -148,6 +191,8 @@ export default function GameInterface({
 				setIsOpponentCardFilled(true);
 				break;
 			case MOVE:
+				setPlayer1TimeConsumed(messageJson.payload.player1TimeConsumed);
+				setPlayer2TimeConsumed(messageJson.payload.player2TimeConsumed);
 				handleMove(messageJson.payload.number);
 				setOpponentLinesCompleted(messageJson.payload.linesCompleted);
 				break;
@@ -163,6 +208,10 @@ export default function GameInterface({
 			case RECONNECT:
 				handleReconnectGame(messageJson.payload);
 				break;
+			case GAME_TIME:
+				setPlayer1TimeConsumed(messageJson.payload.player1TimeConsumed);
+				setPlayer2TimeConsumed(messageJson.payload.player2TimeConsumed);
+				break;
 		}
 	}
 
@@ -175,10 +224,15 @@ export default function GameInterface({
 
 	function handleMove(number: number) {
 		markNumber(number);
+		setLastNumber(number);
 		setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
 	}
 
 	function handleReconnectGame(payload: Payload) {
+		toast({
+			title: "Reconnected",
+			description: "You are connected to previously uncompleted game.",
+		});
 		setPlayerNumber(payload.playerNumber!);
 		setOpponent(payload.otherPlayer);
 		setIsCardFilled(payload.cardFilled!);
@@ -213,6 +267,10 @@ export default function GameInterface({
 				<ToastAction
 					altText="Accept game invite"
 					onClick={() => {
+						setIsWinner(false);
+						setIsLoser(false);
+						setWinnerName("");
+						resetGame();
 						socketRef.current!.send(
 							JSON.stringify({
 								type: ACCEPT_GAME_INVITE,
@@ -263,6 +321,9 @@ export default function GameInterface({
 		setIsGameStarted(false);
 		setIsWinner(false);
 		setIsLoser(false);
+		setLastNumber(null);
+		setPlayer1TimeConsumed(0);
+		setPlayer2TimeConsumed(0);
 	}
 
 	function markNumber(number: number) {
@@ -304,6 +365,7 @@ export default function GameInterface({
 				newCard[row][col] = { ...newCard[row][col], marked: true };
 				return newCard;
 			});
+			setLastNumber(card[row][col].number);
 			setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
 		}
 	}
@@ -343,6 +405,11 @@ export default function GameInterface({
 							image: session.user.image!,
 						}}
 						isTurn={turn === playerNumber}
+						playerTimeConsumed={
+							playerNumber === "player1"
+								? player1TimeConsumed
+								: player2TimeConsumed
+						}
 						isCurrentPlayer={true}
 						isCardFilled={isCardFilled}
 						linesCompleted={linesCompleted}
@@ -374,8 +441,8 @@ export default function GameInterface({
 											onClick={() => handleCellClick(rowIndex, cellIndex)}
 											variant={cell.marked ? "default" : "outline"}
 											className={`p-0 font-bold text-lg ${
-												cell.marked ? "bg-primary text-primary-foreground" : ""
-											}`}
+												cell.marked && "bg-primary text-primary-foreground"
+											} ${lastNumber && cell.number === lastNumber && "ring-4 ring-green-950"}`}
 											style={{
 												width: `${cellSize}px`,
 												height: `${cellSize}px`,
@@ -407,6 +474,11 @@ export default function GameInterface({
 					<PlayerInfo
 						player={opponent!}
 						isTurn={turn !== playerNumber}
+						playerTimeConsumed={
+							playerNumber === "player1"
+								? player2TimeConsumed
+								: player1TimeConsumed
+						}
 						isCurrentPlayer={false}
 						isCardFilled={isOpponentCardFilled}
 						linesCompleted={opponentLinesCompleted}
@@ -515,6 +587,7 @@ interface PlayerInfoProps {
 	isCurrentPlayer: boolean;
 	isCardFilled: boolean;
 	linesCompleted: number;
+	playerTimeConsumed: number;
 }
 
 function PlayerInfo({
@@ -523,6 +596,7 @@ function PlayerInfo({
 	isTurn,
 	isCurrentPlayer,
 	linesCompleted,
+	playerTimeConsumed,
 }: PlayerInfoProps) {
 	const bingoLetters = ["B", "I", "N", "G", "O"];
 
@@ -532,7 +606,9 @@ function PlayerInfo({
 		const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
 
 		return (
-			<div className="bg-secondary text-foreground p-2 rounded-md my-2">
+			<div
+				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${isTurn && "animate-pulse"}`}
+			>
 				{minutes < 10 ? "0" : ""}
 				{minutes}:{remainingSeconds < 10 ? "0" : ""}
 				{remainingSeconds}
@@ -566,7 +642,7 @@ function PlayerInfo({
 						)}
 					</p>
 				</div>
-				{getTimer(100)}
+				{getTimer(playerTimeConsumed)}
 				<div className="flex justify-center items-center">
 					{bingoLetters.map((letter, index) => (
 						<div

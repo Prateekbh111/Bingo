@@ -1,6 +1,8 @@
 import { WebSocket } from "ws";
 import { GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
+const GAME_TIME_MS = 2 * 60 * 60 * 1000;
+
 type BingoCell = {
 	number: number;
 	marked: boolean;
@@ -22,7 +24,11 @@ export class Game {
 	public isPlayer2GridFilled: boolean;
 	public turn: string;
 	public isGameOver: boolean;
-	private startTime: Date;
+	private timer: NodeJS.Timeout | null = null;
+	private player1TimeConsumed = 0;
+	private player2TimeConsumed = 0;
+	private startTime = new Date(Date.now());
+	private lastMoveTime = new Date(Date.now());
 
 	constructor(player1: User, player2: User) {
 		this.player1 = player1;
@@ -32,8 +38,11 @@ export class Game {
 		this.isPlayer1GridFilled = false;
 		this.isPlayer2GridFilled = false;
 		this.turn = "player1";
-		this.startTime = new Date();
 		this.isGameOver = false;
+		if (this.startTime) {
+			this.startTime = this.startTime;
+			this.lastMoveTime = this.startTime;
+		}
 		this.player1.socket.send(
 			JSON.stringify({
 				type: INIT_GAME,
@@ -90,14 +99,35 @@ export class Game {
 	}
 
 	makeMove(user: User, move: number) {
+		const moveTimestamp = new Date(Date.now());
 		this.markNumber(move);
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
 		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
 
-		if (linesCompletedByPlayer1 === 5 && user.id === this.player1.id) {
+		if (this.turn === "player1") {
+			this.player1TimeConsumed =
+				this.player1TimeConsumed +
+				(moveTimestamp.getTime() - this.lastMoveTime.getTime());
+		}
+
+		if (this.turn === "player2") {
+			this.player2TimeConsumed =
+				this.player2TimeConsumed +
+				(moveTimestamp.getTime() - this.lastMoveTime.getTime());
+		}
+
+		this.lastMoveTime = moveTimestamp;
+
+		if (
+			(linesCompletedByPlayer1 === 5 && user.id === this.player1.id) ||
+			this.player1TimeConsumed >= GAME_TIME_MS
+		) {
 			this.gameOver(this.player1);
 			return;
-		} else if (linesCompletedByPlayer2 === 5 && user.id === this.player2.id) {
+		} else if (
+			(linesCompletedByPlayer2 === 5 && user.id === this.player2.id) ||
+			this.player2TimeConsumed >= GAME_TIME_MS
+		) {
 			this.gameOver(this.player2);
 			return;
 		} else if (user.id === this.player1.id) {
@@ -107,6 +137,8 @@ export class Game {
 					payload: {
 						number: move,
 						linesCompleted: linesCompletedByPlayer1,
+						player1TimeConsumed: this.player1TimeConsumed,
+						player2TimeConsumed: this.player2TimeConsumed,
 					},
 				}),
 			);
@@ -117,11 +149,14 @@ export class Game {
 					payload: {
 						number: move,
 						linesCompleted: linesCompletedByPlayer2,
+						player1TimeConsumed: this.player1TimeConsumed,
+						player2TimeConsumed: this.player2TimeConsumed,
 					},
 				}),
 			);
 		}
 		this.turn = this.turn === "player1" ? "player2" : "player1";
+		console.log(this.turn);
 	}
 
 	reconnect(user: User) {
@@ -155,6 +190,26 @@ export class Game {
 				},
 			}),
 		);
+	}
+
+	getPlayer1TimeConsumed() {
+		if (this.turn === "player1") {
+			return (
+				this.player1TimeConsumed +
+				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
+			);
+		}
+		return this.player1TimeConsumed;
+	}
+
+	getPlayer2TimeConsumed() {
+		if (this.turn === "player2") {
+			return (
+				this.player2TimeConsumed +
+				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
+			);
+		}
+		return this.player2TimeConsumed;
 	}
 
 	private markNumber(number: number) {

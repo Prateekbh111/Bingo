@@ -6,6 +6,7 @@ import {
 	INIT_GAME,
 	MOVE,
 	GAME_INVITE,
+	GAME_OVER,
 } from "./messages";
 import { Game } from "./Game";
 
@@ -167,6 +168,17 @@ export class BingoManager {
 				if (game!.isGameOver) {
 					this.games = this.games.filter((g) => !g.isGameOver);
 				}
+			}
+
+			if (message.type == GAME_OVER) {
+				const game = this.games.find(
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
+				);
+				if (!game) console.log("Game not found!!!");
+				game?.gameOver(
+					user.id == game.player1.id ? game.player2 : game.player1,
+				);
+				this.games = this.games.filter((g) => !g.isGameOver);
 			}
 		});
 	}

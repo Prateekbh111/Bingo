@@ -18,12 +18,14 @@ import { Session } from "next-auth";
 import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function ProfileUpdateCard({ session }: { session: Session }) {
 	const { update } = useSession();
 	const [username, setUsername] = useState<string>(session.user.username);
 	const [isUpdatingField, setIsUpdatingField] = useState<boolean>(false);
 	const { toast } = useToast();
+	const router = useRouter();
 
 	const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setUsername(event.target.value);
@@ -43,6 +45,7 @@ export default function ProfileUpdateCard({ session }: { session: Session }) {
 				title: "Profile Updated",
 				description: "Your profile has been successfully updated.",
 			});
+			router.back();
 		} catch (error) {
 			const axiosError = error as AxiosError<ApiResponse>;
 			console.log(axiosError);

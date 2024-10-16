@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { GAME_ENDED, GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
-const GAME_TIME_MS = 0.25 * 60 * 1000;
+const GAME_TIME_MS = 2 * 60 * 1000;
 type GAME_STATUS =
 	| "IN_PROGRESS"
 	| "COMPLETED"

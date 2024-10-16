@@ -10,12 +10,12 @@ const sslOptions = {
 	key: fs.readFileSync(path.resolve(__dirname, "../certs/privkey.pem")),
 };
 
-// const server = https.createServer(sslOptions);
-// server.listen(8080, () => {
-// 	console.log("websocket server is listening on 8080");
-// });
+const server = https.createServer(sslOptions);
+server.listen(8080, () => {
+	console.log("websocket server is listening on 8080");
+});
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ server: server });
 const bingoManager = new BingoManager();
 const secret = "secret";
 

@@ -1,7 +1,14 @@
 import { WebSocket } from "ws";
-import { GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
+import { GAME_ENDED, GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
-const GAME_TIME_MS = 2 * 60 * 60 * 1000;
+const GAME_TIME_MS = 0.25 * 60 * 1000;
+type GAME_STATUS =
+	| "IN_PROGRESS"
+	| "COMPLETED"
+	| "ABANDONED"
+	| "TIME_UP"
+	| "PLAYER_EXIT";
+type GAME_RESULT = "PLAYER1_WINS" | "PLAYER2_WINS";
 
 type BingoCell = {
 	number: number;
@@ -25,6 +32,7 @@ export class Game {
 	public turn: string;
 	public isGameOver: boolean;
 	private timer: NodeJS.Timeout | null = null;
+	private moveTimer: NodeJS.Timeout | null = null;
 	private player1TimeConsumed = 0;
 	private player2TimeConsumed = 0;
 	private startTime = new Date(Date.now());
@@ -39,10 +47,6 @@ export class Game {
 		this.isPlayer2GridFilled = false;
 		this.turn = "player1";
 		this.isGameOver = false;
-		if (this.startTime) {
-			this.startTime = this.startTime;
-			this.lastMoveTime = this.startTime;
-		}
 		this.player1.socket.send(
 			JSON.stringify({
 				type: INIT_GAME,
@@ -80,7 +84,7 @@ export class Game {
 
 	gameOver(user: User) {
 		this.isGameOver = true;
-		this.player2.socket.send(
+		this.player1.socket.send(
 			JSON.stringify({
 				type: GAME_OVER,
 				payload: {
@@ -88,7 +92,7 @@ export class Game {
 				},
 			}),
 		);
-		this.player1.socket.send(
+		this.player2.socket.send(
 			JSON.stringify({
 				type: GAME_OVER,
 				payload: {
@@ -99,6 +103,23 @@ export class Game {
 	}
 
 	makeMove(user: User, move: number) {
+		// console.log(
+		// 	"isplayer1online: ",
+		// 	this.player1.socket.readyState === WebSocket.OPEN,
+		// );
+		// console.log(
+		// 	"isplayer2online: ",
+		// 	this.player2.socket.readyState === WebSocket.OPEN,
+		// );
+		const timeLeftMs1 = GAME_TIME_MS - this.player1TimeConsumed;
+		const minutes1 = Math.floor(timeLeftMs1 / (1000 * 60));
+		const remainingSeconds1 = Math.floor((timeLeftMs1 % (1000 * 60)) / 1000);
+		const timeLeftMs2 = GAME_TIME_MS - this.player2TimeConsumed;
+		const minutes2 = Math.floor(timeLeftMs2 / (1000 * 60));
+		const remainingSeconds2 = Math.floor((timeLeftMs2 % (1000 * 60)) / 1000);
+
+		console.log("player1: ", minutes1, remainingSeconds1);
+		console.log("player2: ", minutes2, remainingSeconds2);
 		const moveTimestamp = new Date(Date.now());
 		this.markNumber(move);
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
@@ -115,6 +136,9 @@ export class Game {
 				this.player2TimeConsumed +
 				(moveTimestamp.getTime() - this.lastMoveTime.getTime());
 		}
+
+		this.resetAbandonTimer();
+		this.resetMoveTimer();
 
 		this.lastMoveTime = moveTimestamp;
 
@@ -175,6 +199,8 @@ export class Game {
 					},
 					board: isPlayer1 ? this.board1 : this.board2,
 					turn: this.turn,
+					player1TimeConsumed: this.getPlayer1TimeConsumed(),
+					player2TimeConsumed: this.getPlayer2TimeConsumed(),
 					cardFilled: isPlayer1
 						? this.isPlayer1GridFilled
 						: this.isPlayer2GridFilled,
@@ -253,5 +279,82 @@ export class Game {
 		}
 
 		return Math.min(linesCompleted, 5);
+	}
+
+	async exitGame(user: User) {
+		this.endGame(
+			"PLAYER_EXIT",
+			user.id === this.player2.id ? "PLAYER1_WINS" : "PLAYER2_WINS",
+		);
+	}
+
+	async resetAbandonTimer() {
+		if (this.timer) {
+			clearTimeout(this.timer);
+		}
+		this.timer = setTimeout(() => {
+			this.endGame(
+				"ABANDONED",
+				this.turn === "player1" ? "PLAYER1_WINS" : "PLAYER2_WINS",
+			);
+		}, 60 * 1000);
+	}
+
+	async resetMoveTimer() {
+		if (this.moveTimer) {
+			clearTimeout(this.moveTimer);
+		}
+		const turn = this.turn;
+		const timeLeft =
+			GAME_TIME_MS -
+			(turn === "player1"
+				? this.player1TimeConsumed
+				: this.player2TimeConsumed);
+
+		this.moveTimer = setTimeout(() => {
+			this.endGame(
+				"TIME_UP",
+				turn === "player1" ? "PLAYER2_WINS" : "PLAYER1_WINS",
+			);
+		}, timeLeft);
+	}
+
+	async endGame(status: GAME_STATUS, result: GAME_RESULT) {
+		this.player1.socket.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					result,
+					status,
+				},
+			}),
+		);
+		this.player2.socket.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					result,
+					status,
+				},
+			}),
+		);
+		// clear timers
+		this.clearTimer();
+		this.clearMoveTimer();
+	}
+
+	setLastMoveTime() {
+		this.lastMoveTime = new Date(Date.now());
+	}
+	clearMoveTimer() {
+		if (this.moveTimer) clearTimeout(this.moveTimer);
+	}
+
+	setTimer(timer: NodeJS.Timeout) {
+		this.timer = timer;
+	}
+
+	clearTimer() {
+		if (this.timer) clearTimeout(this.timer);
 	}
 }

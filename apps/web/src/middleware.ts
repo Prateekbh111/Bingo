@@ -4,7 +4,6 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
 	const token = await getToken({ req: request });
 	const url = request.nextUrl;
-	console.log("url: ", url.pathname);
 	if (token) {
 		if (url.pathname.startsWith("/login") || url.pathname === "/") {
 			return NextResponse.redirect(new URL("/dashboard", request.url));

@@ -7,6 +7,8 @@ import {
 	MOVE,
 	GAME_INVITE,
 	GAME_OVER,
+	OFFLINE,
+	ONLINE,
 } from "./messages";
 import { Game } from "./Game";
 
@@ -156,6 +158,9 @@ export class BingoManager {
 						}),
 					);
 				}
+				if (game?.isPlayer1GridFilled && game.isPlayer2GridFilled) {
+					game.setLastMoveTime();
+				}
 			}
 
 			if (message.type == MOVE) {
@@ -175,9 +180,9 @@ export class BingoManager {
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
 				if (!game) console.log("Game not found!!!");
-				game?.gameOver(
-					user.id == game.player1.id ? game.player2 : game.player1,
-				);
+
+				const winner = message.payload.winner;
+				game?.gameOver(winner === "player1" ? game.player1 : game.player2);
 				this.games = this.games.filter((g) => !g.isGameOver);
 			}
 		});

@@ -5,6 +5,7 @@ interface User {
 	email: string | null;
 	image: string | null;
 }
+
 interface FriendRequest {
 	id: string | null;
 	name?: string | null;

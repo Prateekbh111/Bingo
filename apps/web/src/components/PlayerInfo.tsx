@@ -58,7 +58,7 @@ export default function PlayerInfo({
 						)}
 					</p>
 				</div>
-				{getTimer(playerData?.timeConsumed!)}
+				{getTimer(playerData ? playerData.timeConsumed! : 0)}
 				<div className="flex justify-center items-center">
 					{bingoLetters.map((letter, index) => (
 						<div
@@ -66,13 +66,13 @@ export default function PlayerInfo({
 							className={`
 									flex items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out
 									${
-										index < playerData?.linesCompleted!
+										index < (playerData ? playerData.linesCompleted! : 0)
 											? "text-secondary-foreground scale-110"
 											: "text-primary-foreground scale-100"
 									}
 								`}
 							aria-label={`Bingo letter ${letter} ${
-								index < playerData?.linesCompleted!
+								index < (playerData ? playerData.linesCompleted! : 0)
 									? "completed"
 									: "not completed"
 							}`}

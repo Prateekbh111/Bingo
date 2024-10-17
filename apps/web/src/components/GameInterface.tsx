@@ -14,12 +14,11 @@ import {
 	LoaderCircleIcon,
 	Users,
 } from "lucide-react";
-import WinnerModal from "./Winner_modal";
-import LoserModal from "./Loser_modal";
 import { ToastAction } from "./ui/toast";
 import {
 	ACCEPT_GAME_INVITE,
 	checkBingoWin,
+	GAME_ENDED,
 	GAME_INVITE,
 	GAME_OVER,
 	GAME_TIME,
@@ -27,12 +26,11 @@ import {
 	GRID_FILLED,
 	INIT_GAME,
 	MOVE,
-	OFFLINE,
-	ONLINE,
 	RECONNECT,
 	SEND_GAME_INVITE,
 } from "@/lib/utils";
 import PlayerInfo from "./PlayerInfo";
+import GameEndModal from "./GameEndModal";
 
 export default function GameInterface({
 	friends,
@@ -57,9 +55,12 @@ export default function GameInterface({
 	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
 
-	const [isLoser, setIsLoser] = useState(false);
-	const [isWinner, setIsWinner] = useState(false);
-	const [winnerName, setWinnerName] = useState("");
+	const [gameResult, setGameResult] = useState<GameResult>({
+		result: "",
+		by: "",
+	});
+
+	const [isGameEnded, setIsGameEnded] = useState<boolean>(false);
 
 	const [userData, setUserData] = useState<PlayerData>({
 		isCardFilled: false,
@@ -129,7 +130,7 @@ export default function GameInterface({
 			isGameStarted &&
 			userData.isCardFilled &&
 			opponentData.isCardFilled &&
-			!winnerName
+			!isGameEnded
 		) {
 			interval = setInterval(updateTime, 100);
 
@@ -139,7 +140,7 @@ export default function GameInterface({
 		}
 	}, [
 		isGameStarted,
-		winnerName,
+		isGameEnded,
 		turn,
 		userData.isCardFilled,
 		opponentData.isCardFilled,
@@ -178,34 +179,40 @@ export default function GameInterface({
 		);
 	}
 
-	if (userData.timeConsumed > GAME_TIME_MS) {
-		socketRef.current?.send(
-			JSON.stringify({
-				type: GAME_OVER,
-				payload: {
-					winner: userData.playerNumber === "player1" ? "player2" : "player1",
-				},
-			}),
-		);
+	if (gameResult.result === "" && userData.timeConsumed > GAME_TIME_MS) {
 		setUserData((prevUserData) => ({
 			...prevUserData,
 			timeConsumed: GAME_TIME_MS,
 		}));
-	}
-	if (opponentData.timeConsumed > GAME_TIME_MS) {
 		socketRef.current?.send(
 			JSON.stringify({
-				type: GAME_OVER,
+				type: GAME_ENDED,
 				payload: {
-					winner:
-						opponentData.playerNumber === "player1" ? "player2" : "player1",
+					result:
+						userData.playerNumber === "player1"
+							? "PLAYER2_WINS"
+							: "PLAYER1_WINS",
 				},
 			}),
 		);
+	}
+
+	if (gameResult.result === "" && opponentData.timeConsumed > GAME_TIME_MS) {
 		setOpponentData((prevOpponentData) => ({
 			...prevOpponentData,
 			timeConsumed: GAME_TIME_MS,
 		}));
+		socketRef.current?.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					result:
+						opponentData.playerNumber === "player1"
+							? "PLAYER2_WINS"
+							: "PLAYER1_WINS",
+				},
+			}),
+		);
 	}
 
 	async function handleSocketMessage(message: MessageEvent) {
@@ -241,14 +248,14 @@ export default function GameInterface({
 					linesCompleted: messageJson.payload.linesCompleted!,
 				}));
 				break;
-			case GAME_OVER:
-				const winner = messageJson.payload.winnerName;
-				setWinnerName(winner);
-				if (winner == session.user.name) {
-					setIsWinner(true);
-				} else {
-					setIsLoser(true);
-				}
+			case GAME_ENDED:
+				if (gameResult?.result != "") return;
+				const result = messageJson.payload.result;
+				const by = messageJson.payload.status;
+				console.log(messageJson.payload);
+				setGameResult({ result, by });
+				setDisabled(true);
+				setIsGameEnded(true);
 				break;
 			case RECONNECT:
 				handleReconnectGame(messageJson.payload);
@@ -353,9 +360,7 @@ export default function GameInterface({
 				<ToastAction
 					altText="Accept game invite"
 					onClick={() => {
-						setIsWinner(false);
-						setIsLoser(false);
-						setWinnerName("");
+						setGameResult({ result: "", by: "" });
 						resetGame();
 						socketRef.current!.send(
 							JSON.stringify({
@@ -398,10 +403,11 @@ export default function GameInterface({
 		setCard(generateEmptyCard());
 		setNextNumber(1);
 		setTurn("player1");
-		setIsWinner(false);
-		setIsLoser(false);
+		setGameResult({ result: "", by: "" });
 		setLastNumber(null);
 		setIsGameStarted(false);
+		setIsGameEnded(false);
+		setDisabled(false);
 
 		setUserData({
 			...userData,
@@ -471,13 +477,6 @@ export default function GameInterface({
 	function updateCellSize(containerWidth: number) {
 		const newSize = Math.floor((containerWidth - 30) / 5);
 		setCellSize(Math.max(newSize, 56));
-	}
-
-	function handlePlayAgain() {
-		setIsWinner(false);
-		setIsLoser(false);
-		setWinnerName("");
-		resetGame();
 	}
 
 	function handlePlayWithFriend(friendId: string) {
@@ -630,19 +629,33 @@ export default function GameInterface({
 					</div>
 				</div>
 			)}
-
-			<WinnerModal
-				isOpen={isWinner}
-				onClose={() => setIsWinner(false)}
-				winner={winnerName}
-				onPlayAgain={handlePlayAgain}
-			/>
-
-			<LoserModal
-				isOpen={isLoser}
-				onClose={() => setIsLoser(false)}
-				winner={winnerName}
-				onPlayAgain={handlePlayAgain}
+			<GameEndModal
+				isOpen={gameResult.result !== ""}
+				onClose={() => {
+					setUserData((prevUserData) => ({
+						...prevUserData,
+						timeConsumed: 0,
+					}));
+					setOpponentData((prevOpponentData) => ({
+						...prevOpponentData,
+						timeConsumed: 0,
+					}));
+					setGameResult({ result: "", by: "" });
+				}}
+				isWinner={
+					gameResult?.result === "PLAYER1_WINS" &&
+					userData.playerNumber === "player1"
+						? true
+						: gameResult?.result === "PLAYER2_WINS" &&
+							  userData.playerNumber === "player2"
+							? true
+							: false
+				}
+				by={gameResult.by || ""}
+				onPlayAgain={() => {
+					setGameResult({ result: "", by: "" });
+					resetGame();
+				}}
 			/>
 		</div>
 	);

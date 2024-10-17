@@ -1,13 +1,8 @@
 import { WebSocket } from "ws";
 import { GAME_ENDED, GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
-const GAME_TIME_MS = 2 * 60 * 1000;
-type GAME_STATUS =
-	| "IN_PROGRESS"
-	| "COMPLETED"
-	| "ABANDONED"
-	| "TIME_UP"
-	| "PLAYER_EXIT";
+const GAME_TIME_MS = 0.25 * 60 * 1000;
+type GAME_STATUS = "BINGO" | "TIME_UP" | "PLAYER_EXIT";
 type GAME_RESULT = "PLAYER1_WINS" | "PLAYER2_WINS";
 
 type BingoCell = {
@@ -78,52 +73,41 @@ export class Game {
 	setBoard1(board: BingoCell[][]) {
 		this.board1 = board;
 	}
+
 	setBoard2(board: BingoCell[][]) {
 		this.board2 = board;
 	}
 
-	gameOver(user: User) {
+	gameOver(result: GAME_RESULT, by: GAME_STATUS) {
 		this.isGameOver = true;
-		this.player1.socket.send(
-			JSON.stringify({
-				type: GAME_OVER,
-				payload: {
-					winnerName: user.name,
-				},
-			}),
-		);
-		this.player2.socket.send(
-			JSON.stringify({
-				type: GAME_OVER,
-				payload: {
-					winnerName: user.name,
-				},
-			}),
-		);
+		this.endGame(by, result);
 	}
 
 	makeMove(user: User, move: number) {
-		// console.log(
-		// 	"isplayer1online: ",
-		// 	this.player1.socket.readyState === WebSocket.OPEN,
-		// );
-		// console.log(
-		// 	"isplayer2online: ",
-		// 	this.player2.socket.readyState === WebSocket.OPEN,
-		// );
-		const timeLeftMs1 = GAME_TIME_MS - this.player1TimeConsumed;
-		const minutes1 = Math.floor(timeLeftMs1 / (1000 * 60));
-		const remainingSeconds1 = Math.floor((timeLeftMs1 % (1000 * 60)) / 1000);
-		const timeLeftMs2 = GAME_TIME_MS - this.player2TimeConsumed;
-		const minutes2 = Math.floor(timeLeftMs2 / (1000 * 60));
-		const remainingSeconds2 = Math.floor((timeLeftMs2 % (1000 * 60)) / 1000);
-
-		console.log("player1: ", minutes1, remainingSeconds1);
-		console.log("player2: ", minutes2, remainingSeconds2);
 		const moveTimestamp = new Date(Date.now());
 		this.markNumber(move);
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
 		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
+
+		if (user.id === this.player1.id && linesCompletedByPlayer1 === 5) {
+			this.gameOver("PLAYER1_WINS", "BINGO");
+			return;
+		}
+
+		if (user.id === this.player2.id && linesCompletedByPlayer2 === 5) {
+			this.gameOver("PLAYER2_WINS", "BINGO");
+			return;
+		}
+
+		if (linesCompletedByPlayer1 === 5) {
+			this.gameOver("PLAYER1_WINS", "BINGO");
+			return;
+		}
+
+		if (linesCompletedByPlayer2 === 5) {
+			this.gameOver("PLAYER2_WINS", "BINGO");
+			return;
+		}
 
 		if (this.turn === "player1") {
 			this.player1TimeConsumed =
@@ -137,24 +121,11 @@ export class Game {
 				(moveTimestamp.getTime() - this.lastMoveTime.getTime());
 		}
 
-		this.resetAbandonTimer();
 		this.resetMoveTimer();
 
 		this.lastMoveTime = moveTimestamp;
 
-		if (
-			(linesCompletedByPlayer1 === 5 && user.id === this.player1.id) ||
-			this.player1TimeConsumed >= GAME_TIME_MS
-		) {
-			this.gameOver(this.player1);
-			return;
-		} else if (
-			(linesCompletedByPlayer2 === 5 && user.id === this.player2.id) ||
-			this.player2TimeConsumed >= GAME_TIME_MS
-		) {
-			this.gameOver(this.player2);
-			return;
-		} else if (user.id === this.player1.id) {
+		if (user.id === this.player1.id) {
 			this.player2.socket.send(
 				JSON.stringify({
 					type: MOVE,
@@ -286,18 +257,6 @@ export class Game {
 			"PLAYER_EXIT",
 			user.id === this.player2.id ? "PLAYER1_WINS" : "PLAYER2_WINS",
 		);
-	}
-
-	async resetAbandonTimer() {
-		if (this.timer) {
-			clearTimeout(this.timer);
-		}
-		this.timer = setTimeout(() => {
-			this.endGame(
-				"ABANDONED",
-				this.turn === "player1" ? "PLAYER1_WINS" : "PLAYER2_WINS",
-			);
-		}, 60 * 1000);
 	}
 
 	async resetMoveTimer() {

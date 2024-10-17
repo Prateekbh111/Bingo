@@ -21,7 +21,7 @@ export default function ThemeSwitch() {
 					setTheme(theme === "dark" ? "light" : "dark");
 				}}
 			/>
-			<Moon className={`${theme === "dark" && "text-primmary"}`} />
+			<Moon className={`${theme === "dark" && "text-primary"}`} />
 		</div>
 	);
 }

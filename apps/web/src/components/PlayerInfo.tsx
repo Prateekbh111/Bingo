@@ -23,7 +23,7 @@ export default function PlayerInfo({
 
 		return (
 			<div
-				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${isTurn && "animate-pulse"}`}
+				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${isTurn && "animate-pulse duration-1000"}`}
 			>
 				{minutes < 10 ? "0" : ""}
 				{minutes}:{remainingSeconds < 10 ? "0" : ""}

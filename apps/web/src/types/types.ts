@@ -18,6 +18,11 @@ type PlayerData = {
 	data: Player | null;
 };
 
+type GameResult = {
+	result: string;
+	by: string;
+};
+
 type Payload = {
 	playerNumber?: string;
 	otherPlayer?: Player;

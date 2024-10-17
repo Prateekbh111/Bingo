@@ -9,6 +9,7 @@ import {
 	GAME_OVER,
 	OFFLINE,
 	ONLINE,
+	GAME_ENDED,
 } from "./messages";
 import { Game } from "./Game";
 
@@ -167,23 +168,36 @@ export class BingoManager {
 				const game = this.games.find(
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
-				if (!game) console.log("Game not found!!!");
+				if (!game) {
+					console.log("Game not found!!!");
+					return;
+				}
+				if (game && game!.isGameOver) {
+					this.games = this.games.filter((g) => !g.isGameOver);
+					return;
+				}
 
 				game!.makeMove(user, message.payload.number);
-				if (game!.isGameOver) {
+				if (game && game!.isGameOver) {
 					this.games = this.games.filter((g) => !g.isGameOver);
 				}
 			}
 
-			if (message.type == GAME_OVER) {
+			if (message.type == GAME_ENDED) {
 				const game = this.games.find(
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
-				if (!game) console.log("Game not found!!!");
+				if (!game) {
+					console.log("Game not found!!!");
+					return;
+				}
 
-				const winner = message.payload.winner;
-				game?.gameOver(winner === "player1" ? game.player1 : game.player2);
-				this.games = this.games.filter((g) => !g.isGameOver);
+				const result = message.payload.result;
+				game?.gameOver(result, "TIME_UP");
+				if (game && game!.isGameOver) {
+					this.games = this.games.filter((g) => !g.isGameOver);
+					return;
+				}
 			}
 		});
 	}

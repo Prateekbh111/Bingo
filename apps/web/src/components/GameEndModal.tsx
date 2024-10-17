@@ -8,19 +8,21 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trophy } from "lucide-react";
+import { Frown, Trophy } from "lucide-react";
 
-interface WinnerModalProps {
+interface GameEndModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	winner: string;
+	isWinner: boolean;
+	by: string;
 	onPlayAgain: () => void;
 }
 
-const WinnerModal: React.FC<WinnerModalProps> = ({
+const GameEndModal: React.FC<GameEndModalProps> = ({
 	isOpen,
 	onClose,
-	winner,
+	isWinner,
+	by,
 	onPlayAgain,
 }) => {
 	return (
@@ -28,18 +30,28 @@ const WinnerModal: React.FC<WinnerModalProps> = ({
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle className="text-2xl font-bold text-center flex items-center justify-center">
-						<Trophy className="w-8 h-8 text-yellow-400 mr-2" />
-						Bingo Winner!
+						{isWinner ? (
+							<>
+								<Trophy className="w-8 h-8 text-yellow-400 mr-2" />
+								Bingo Champion!
+							</>
+						) : (
+							<>
+								<Frown className="w-8 h-8 text-blue-500 mr-2" />
+								Better Luck Next Time!
+							</>
+						)}
 					</DialogTitle>
 					<DialogDescription className="text-center text-lg">
-						Congratulations, {winner}!
+						{isWinner
+							? "Congratulations on your victory!"
+							: "Don't give up, you'll get them next time!"}
 					</DialogDescription>
-				</DialogHeader>
-				<div className="my-4">
-					<p className="text-center">
-						You&apos;ve completed a Bingo! Great job on your strategy and luck.
+
+					<p className="text-center tracking-tighter opacity-70">
+						by {by === "TIME_UP" ? "timeout" : "bingo"}
 					</p>
-				</div>
+				</DialogHeader>
 				<DialogFooter className="flex justify-center gap-3 ">
 					<Button onClick={onPlayAgain}>Play Again</Button>
 					<Button variant="outline" onClick={onClose}>
@@ -51,4 +63,4 @@ const WinnerModal: React.FC<WinnerModalProps> = ({
 	);
 };
 
-export default WinnerModal;
+export default GameEndModal;

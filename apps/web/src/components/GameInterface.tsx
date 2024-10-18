@@ -13,7 +13,6 @@ import {
 	checkBingoWin,
 	GAME_ENDED,
 	GAME_INVITE,
-	GAME_OVER,
 	GAME_TIME,
 	GAME_TIME_MS,
 	GRID_FILLED,

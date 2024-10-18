@@ -1,1 +1,1 @@
-{"root":["./src/bingomanager.ts","./src/game.ts","./src/index.ts","./src/messages.ts","./src/db/prisma.ts"],"version":"5.6.3"}
+{"root":["./src/bingomanager.ts","./src/game.ts","./src/index.ts","./src/types.ts","./src/db/prisma.ts"],"version":"5.6.3"}

@@ -12,7 +12,7 @@ const sslOptions = {
 
 const server = https.createServer(sslOptions);
 server.listen(8080, () => {
-	console.log("websocket server is listening on 8080");
+	console.log("Secure websocket server is listening on 8080🟢");
 });
 
 const wss = new WebSocketServer({ server: server });
@@ -20,18 +20,22 @@ const bingoManager = new BingoManager();
 const secret = "secret";
 
 async function getTokenVal(req: any) {
-	const sessionToken = req.url.match(/\/token=(.*)/)[1];
-	// const reqToken = req.headers.cookie!.split("=")[1];
-	// console.log(sessionToken);
-	const decoded = await decode({
-		token: sessionToken,
-		secret: secret,
-	});
-	return decoded;
+	try {
+		const sessionToken = req.url.match(/\/token=(.*)/)[1];
+		const decoded = await decode({
+			token: sessionToken,
+			secret: secret,
+		});
+		return decoded;
+	} catch {
+		console.error("Token decoding error");
+		return { error: "Invalid token" };
+	}
 }
 
 wss.on("connection", async function connection(ws, req) {
 	const userSession = await getTokenVal(req);
+	if (!userSession || userSession.error) return;
 	const user = {
 		id: userSession?.sub!,
 		name: userSession?.name!,

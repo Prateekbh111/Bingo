@@ -1,19 +1,20 @@
 import { WebSocket } from "ws";
-import { GAME_ENDED, GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
-
-const GAME_TIME_MS = 0.25 * 60 * 1000;
-type GAME_STATUS = "BINGO" | "TIME_UP" | "PLAYER_EXIT";
-type GAME_RESULT = "PLAYER1_WINS" | "PLAYER2_WINS";
-
-type BingoCell = {
-	number: number;
-	marked: boolean;
-};
+import {
+	BingoCell,
+	GAME_ENDED,
+	GAME_RESULT,
+	GAME_STATUS,
+	GAME_TIME_MS,
+	INIT_GAME,
+	MOVE,
+	RECONNECT,
+} from "./types";
 
 interface User {
 	id: string;
 	name: string;
 	image: string;
+	username: string;
 	socket: WebSocket;
 }
 
@@ -26,11 +27,9 @@ export class Game {
 	public isPlayer2GridFilled: boolean;
 	public turn: string;
 	public isGameOver: boolean;
-	private timer: NodeJS.Timeout | null = null;
 	private moveTimer: NodeJS.Timeout | null = null;
 	private player1TimeConsumed = 0;
 	private player2TimeConsumed = 0;
-	private startTime = new Date(Date.now());
 	private lastMoveTime = new Date(Date.now());
 
 	constructor(player1: User, player2: User) {
@@ -70,41 +69,31 @@ export class Game {
 		);
 	}
 
-	setBoard1(board: BingoCell[][]) {
-		this.board1 = board;
-	}
-
-	setBoard2(board: BingoCell[][]) {
-		this.board2 = board;
-	}
-
-	gameOver(result: GAME_RESULT, by: GAME_STATUS) {
-		this.isGameOver = true;
-		this.endGame(by, result);
-	}
-
 	makeMove(user: User, move: number) {
 		this.markNumber(move);
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
 		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
 
 		if (user.id === this.player1.id && linesCompletedByPlayer1 === 5) {
-			this.gameOver("PLAYER1_WINS", "BINGO");
+			this.endGame("BINGO", "PLAYER1_WINS");
 			return;
 		}
 
 		if (user.id === this.player2.id && linesCompletedByPlayer2 === 5) {
-			this.gameOver("PLAYER2_WINS", "BINGO");
+			this.endGame("BINGO", "PLAYER2_WINS");
+
 			return;
 		}
 
 		if (linesCompletedByPlayer1 === 5) {
-			this.gameOver("PLAYER1_WINS", "BINGO");
+			this.endGame("BINGO", "PLAYER1_WINS");
+
 			return;
 		}
 
 		if (linesCompletedByPlayer2 === 5) {
-			this.gameOver("PLAYER2_WINS", "BINGO");
+			this.endGame("BINGO", "PLAYER2_WINS");
+
 			return;
 		}
 
@@ -155,6 +144,49 @@ export class Game {
 		}
 	}
 
+	async endGame(status: GAME_STATUS, result: GAME_RESULT) {
+		this.isGameOver = true;
+		this.player1.socket.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					status,
+					result,
+				},
+			}),
+		);
+		this.player2.socket.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					status,
+					result,
+				},
+			}),
+		);
+		this.clearMoveTimer();
+	}
+
+	async resetMoveTimer() {
+		if (this.moveTimer) {
+			clearTimeout(this.moveTimer);
+		}
+		const turn = this.turn;
+		const timeLeft =
+			GAME_TIME_MS -
+			(turn === "player1"
+				? this.player1TimeConsumed
+				: this.player2TimeConsumed);
+
+		this.moveTimer = setTimeout(() => {
+			this.isGameOver = true;
+			this.endGame(
+				"TIME_UP",
+				turn === "player1" ? "PLAYER2_WINS" : "PLAYER1_WINS",
+			);
+		}, timeLeft);
+	}
+
 	reconnect(user: User) {
 		const isPlayer1 = user.id === this.player1.id;
 		if (isPlayer1) this.player1.socket = user.socket;
@@ -190,39 +222,6 @@ export class Game {
 		);
 	}
 
-	getPlayer1TimeConsumed() {
-		if (this.turn === "player1") {
-			return (
-				this.player1TimeConsumed +
-				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
-			);
-		}
-		return this.player1TimeConsumed;
-	}
-
-	getPlayer2TimeConsumed() {
-		if (this.turn === "player2") {
-			return (
-				this.player2TimeConsumed +
-				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
-			);
-		}
-		return this.player2TimeConsumed;
-	}
-
-	private markNumber(number: number) {
-		this.board1 = this.board1.map((row) =>
-			row.map((cell) =>
-				cell.number === number ? { ...cell, marked: true } : cell,
-			),
-		);
-		this.board2 = this.board2.map((row) =>
-			row.map((cell) =>
-				cell.number === number ? { ...cell, marked: true } : cell,
-			),
-		);
-	}
-
 	private calculateLinesCompleted(playerName: string) {
 		const board = playerName === "player1" ? this.board1 : this.board2;
 		if (board.length === 0) return 0;
@@ -253,70 +252,52 @@ export class Game {
 		return Math.min(linesCompleted, 5);
 	}
 
-	async exitGame(user: User) {
-		this.endGame(
-			"PLAYER_EXIT",
-			user.id === this.player2.id ? "PLAYER1_WINS" : "PLAYER2_WINS",
+	private markNumber(number: number) {
+		this.board1 = this.board1.map((row) =>
+			row.map((cell) =>
+				cell.number === number ? { ...cell, marked: true } : cell,
+			),
+		);
+		this.board2 = this.board2.map((row) =>
+			row.map((cell) =>
+				cell.number === number ? { ...cell, marked: true } : cell,
+			),
 		);
 	}
 
-	async resetMoveTimer() {
-		if (this.moveTimer) {
-			clearTimeout(this.moveTimer);
-		}
-		const turn = this.turn;
-		const timeLeft =
-			GAME_TIME_MS -
-			(turn === "player1"
-				? this.player1TimeConsumed
-				: this.player2TimeConsumed);
-
-		this.moveTimer = setTimeout(() => {
-			console.log("TIME OUT HO GYA BC");
-			this.isGameOver = true;
-			this.endGame(
-				"TIME_UP",
-				turn === "player1" ? "PLAYER2_WINS" : "PLAYER1_WINS",
+	getPlayer1TimeConsumed() {
+		if (this.turn === "player1") {
+			return (
+				this.player1TimeConsumed +
+				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
 			);
-		}, timeLeft);
+		}
+		return this.player1TimeConsumed;
 	}
 
-	async endGame(status: GAME_STATUS, result: GAME_RESULT) {
-		this.player1.socket.send(
-			JSON.stringify({
-				type: GAME_ENDED,
-				payload: {
-					result,
-					status,
-				},
-			}),
-		);
-		this.player2.socket.send(
-			JSON.stringify({
-				type: GAME_ENDED,
-				payload: {
-					result,
-					status,
-				},
-			}),
-		);
-		// clear timers
-		this.clearTimer();
-		this.clearMoveTimer();
+	getPlayer2TimeConsumed() {
+		if (this.turn === "player2") {
+			return (
+				this.player2TimeConsumed +
+				(new Date(Date.now()).getTime() - this.lastMoveTime.getTime())
+			);
+		}
+		return this.player2TimeConsumed;
 	}
 
 	setLastMoveTime() {
 		this.lastMoveTime = new Date(Date.now());
 	}
+
 	clearMoveTimer() {
 		if (this.moveTimer) clearTimeout(this.moveTimer);
 	}
 
-	setTimer(timer: NodeJS.Timeout) {
-		this.timer = timer;
+	setBoard1(board: BingoCell[][]) {
+		this.board1 = board;
 	}
 
-	clearTimer() {
-		if (this.timer) clearTimeout(this.timer);
+	setBoard2(board: BingoCell[][]) {
+		this.board2 = board;
 	}
 }

@@ -6,19 +6,30 @@ import {
 	INIT_GAME,
 	MOVE,
 	GAME_INVITE,
-	GAME_OVER,
-	OFFLINE,
-	ONLINE,
 	GAME_ENDED,
-} from "./messages";
+	Type,
+	BingoCell,
+	GAME_RESULT,
+} from "./types";
 import { Game } from "./Game";
 
 interface User {
 	id: string;
 	name: string;
-	username: string;
 	image: string;
+	username: string;
 	socket: WebSocket;
+}
+
+interface Message {
+	type: Type;
+	payload: {
+		friendId?: string;
+		otherPlayer: User;
+		board: BingoCell[][];
+		number: number;
+		result: GAME_RESULT;
+	};
 }
 
 export class BingoManager {
@@ -38,29 +49,38 @@ export class BingoManager {
 	}
 
 	removeUser(socket: WebSocket) {
+		//stop the game here because the user has left
+		console.log("user is removed");
 		this.users = this.users.filter((user) => user.socket !== socket);
-		//stop the game here bec ause the user has left
+	}
+
+	private checkExistingGame(user: User) {
+		const existingGame = this.games.find(
+			(game) => game.player1.id === user.id || game.player2.id === user.id,
+		);
+
+		//if game exists but over then remove that game
+		if (existingGame && existingGame.isGameOver) {
+			this.games = this.games.filter((g) => !g.isGameOver);
+		}
+
+		//if game exists but not over then reconnect
+		if (existingGame && !existingGame.isGameOver) {
+			existingGame.reconnect(user);
+			return;
+		}
 	}
 
 	private addHandler(user: User) {
 		user.socket.on("message", (data) => {
-			const message = JSON.parse(data.toString());
+			const message: Message = JSON.parse(data.toString());
 			console.log(message.type);
 
 			if (message.type == INIT_GAME) {
-				const existingGame = this.games.find(
-					(game) => game.player1.id === user.id || game.player2.id === user.id,
-				);
-
-				if (existingGame && existingGame.isGameOver) {
-					console.log("delete krdi bc");
-					this.games = this.games.filter((g) => !g.isGameOver);
-				}
-
-				if (existingGame && !existingGame.isGameOver) {
-					existingGame.reconnect(user);
-					return;
-				}
+				this.checkExistingGame(user);
+				//if no game exists connect to new game
+				//if there is a pending user to connect then add current user to it
+				//otherwise make current user to pending user
 				if (this.pendingUser && this.pendingUser.id !== user.id) {
 					const game = new Game(this.pendingUser, user);
 					this.games.push(game);
@@ -71,14 +91,9 @@ export class BingoManager {
 			}
 
 			if (message.type == SEND_GAME_INVITE) {
-				const existingGame = this.games.find(
-					(game) => game.player1.id === user.id || game.player2.id === user.id,
-				);
+				this.checkExistingGame(user);
 
-				if (existingGame) {
-					existingGame.reconnect(user);
-					return;
-				}
+				//getting friend id from payload
 				const friendId = message.payload.friendId;
 				let sent = false;
 				this.users.map((activeUser) => {
@@ -106,14 +121,8 @@ export class BingoManager {
 			}
 
 			if (message.type == ACCEPT_GAME_INVITE) {
-				const existingGame = this.games.find(
-					(game) => game.player1.id === user.id || game.player2.id === user.id,
-				);
+				this.checkExistingGame(user);
 
-				if (existingGame) {
-					existingGame.reconnect(user);
-					return;
-				}
 				const otherPlayer = message.payload.otherPlayer;
 				let otherPlayerSocket = null;
 				this.users.map((activeUser) => {
@@ -163,7 +172,7 @@ export class BingoManager {
 						}),
 					);
 				}
-				if (game?.isPlayer1GridFilled && game.isPlayer2GridFilled) {
+				if (game?.isPlayer1GridFilled && game?.isPlayer2GridFilled) {
 					game.setLastMoveTime();
 				}
 			}
@@ -197,7 +206,7 @@ export class BingoManager {
 				}
 
 				const result = message.payload.result;
-				game?.gameOver(result, "TIME_UP");
+				game?.endGame("TIME_UP", result);
 				console.log(game.isGameOver);
 				if (game && game!.isGameOver) {
 					this.games = this.games.filter((g) => !g.isGameOver);

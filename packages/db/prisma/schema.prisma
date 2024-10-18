@@ -19,6 +19,9 @@ model User {
   sessions      Session[]
   friends      Friends[]         
   receivedRequests FriendRequest[]
+  player1Game  Game[]   @relation("player1Game")
+  player2Game  Game[]   @relation("player2Game")
+
 }
 
 model Friends{
@@ -51,6 +54,34 @@ model Chat {
   user1Id   String
   user2Id   String
   messages  Message[]
+}
+
+model Game {
+  id            String     @id @default(uuid())
+  player1Id String
+  player2Id String
+  player1   User       @relation("player1Game", fields: [player1Id], references: [id])
+  player2   User       @relation("player2Game", fields: [player2Id], references: [id])
+  status        GameStatus
+  result        GameResult?
+  startAt       DateTime   @default(now())
+  endAt         DateTime?
+
+  @@index([status, result])
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIME_UP
+  PLAYER_EXIT
+}
+
+enum GameResult {
+  WHITE_WINS
+  BLACK_WINS
+  DRAW
 }
 
 

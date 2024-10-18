@@ -20,6 +20,9 @@ export default function PlayerInfo({
 		const timeLeftMs = GAME_TIME_MS - timeConsumed;
 		const minutes = Math.floor(timeLeftMs / (1000 * 60));
 		const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+		const remainingMillis = Math.floor(
+			((timeLeftMs % (1000 * 60)) % 1000) / 100,
+		);
 
 		return (
 			<div
@@ -28,6 +31,7 @@ export default function PlayerInfo({
 				{minutes < 10 ? "0" : ""}
 				{minutes}:{remainingSeconds < 10 ? "0" : ""}
 				{remainingSeconds}
+				{remainingSeconds <= 0 && `:${remainingMillis}`}
 			</div>
 		);
 	};

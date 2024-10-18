@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export const GAME_TIME_MS = 2 * 60 * 1000;
+export const GAME_TIME_MS = 0.25 * 60 * 1000;
 export const CARDFILL_TIME_MS = 0.5 * 60 * 1000;
 
 export const INIT_GAME = "init_game";

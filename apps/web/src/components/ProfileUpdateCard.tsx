@@ -38,14 +38,16 @@ export default function ProfileUpdateCard({ session }: { session: Session }) {
 			await axios.post<ApiResponse>("/api/updateUsername", {
 				username,
 			});
-			update({
+			await update({
 				username: username,
 			});
+			console.log(session.user.username);
 			toast({
 				title: "Profile Updated",
 				description: "Your profile has been successfully updated.",
+				duration: 1000,
 			});
-			router.back();
+			router.refresh();
 		} catch (error) {
 			const axiosError = error as AxiosError<ApiResponse>;
 			console.log(axiosError);

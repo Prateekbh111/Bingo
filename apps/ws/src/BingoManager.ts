@@ -52,7 +52,12 @@ export class BingoManager {
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);
 
-				if (existingGame) {
+				if (existingGame && existingGame.isGameOver) {
+					console.log("delete krdi bc");
+					this.games = this.games.filter((g) => !g.isGameOver);
+				}
+
+				if (existingGame && !existingGame.isGameOver) {
 					existingGame.reconnect(user);
 					return;
 				}
@@ -131,7 +136,6 @@ export class BingoManager {
 					socket: otherPlayerSocket,
 				};
 
-				console.log(opponent);
 				const game = new Game(user, opponent);
 				this.games.push(game);
 			}
@@ -194,6 +198,7 @@ export class BingoManager {
 
 				const result = message.payload.result;
 				game?.gameOver(result, "TIME_UP");
+				console.log(game.isGameOver);
 				if (game && game!.isGameOver) {
 					this.games = this.games.filter((g) => !g.isGameOver);
 					return;

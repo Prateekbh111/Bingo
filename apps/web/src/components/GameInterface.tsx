@@ -1,19 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Session } from "next-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import {
-	Check,
-	Gamepad2,
-	LoaderCircle,
-	LoaderCircleIcon,
-	Users,
-} from "lucide-react";
+import { Check, Gamepad2, LoaderCircle, LoaderCircleIcon } from "lucide-react";
 import { ToastAction } from "./ui/toast";
 import {
 	ACCEPT_GAME_INVITE,
@@ -31,6 +24,7 @@ import {
 } from "@/lib/utils";
 import PlayerInfo from "./PlayerInfo";
 import GameEndModal from "./GameEndModal";
+import Friends from "./Friends";
 
 export default function GameInterface({
 	friends,
@@ -49,8 +43,6 @@ export default function GameInterface({
 	const [turn, setTurn] = useState<string>("player1");
 	const [nextNumber, setNextNumber] = useState<number>(1);
 	const [lastNumber, setLastNumber] = useState<number | null>(null);
-
-	const [userFriends] = useState<Friend[]>(friends);
 
 	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
@@ -83,6 +75,97 @@ export default function GameInterface({
 		data: null,
 	});
 
+	const resetGame = useCallback(() => {
+		setCard(generateEmptyCard());
+		setNextNumber(1);
+		setTurn("player1");
+		setGameResult({ result: "", by: "" });
+		setLastNumber(null);
+		setIsGameStarted(false);
+		setIsGameEnded(false);
+		setDisabled(false);
+
+		setUserData((prevUserData) => ({
+			...prevUserData,
+			isCardFilled: false,
+			playerNumber: "",
+			linesCompleted: 0,
+			timeConsumed: 0,
+		}));
+		setOpponentData((prevOpponentData) => ({
+			...prevOpponentData,
+			isCardFilled: false,
+			playerNumber: "",
+			linesCompleted: 0,
+			timeConsumed: 0,
+		}));
+	}, []);
+
+	async function handleSocketMessage(message: MessageEvent) {
+		const messageJson = JSON.parse(message.data);
+		console.log(messageJson.type);
+		switch (messageJson.type) {
+			case INIT_GAME:
+				handleInitGame(messageJson.payload);
+				break;
+			case GAME_INVITE:
+				handleGameInvite(messageJson.payload);
+			case GRID_FILLED:
+				setOpponentData((prevOpponentData) => ({
+					...prevOpponentData,
+					isCardFilled: true,
+				}));
+				break;
+			case MOVE:
+				console.log(messageJson.payload);
+				handleMove(messageJson.payload.number);
+				setUserData((prevUserData) => ({
+					...prevUserData,
+					timeConsumed:
+						prevUserData.playerNumber === "player1"
+							? messageJson.payload.player1TimeConsumed!
+							: messageJson.payload.player2TimeConsumed!,
+				}));
+				setOpponentData((prevOpponentData) => ({
+					...prevOpponentData,
+					timeConsumed:
+						prevOpponentData.playerNumber === "player1"
+							? messageJson.payload.player1TimeConsumed!
+							: messageJson.payload.player2TimeConsumed!,
+					linesCompleted: messageJson.payload.linesCompleted!,
+				}));
+				break;
+			case GAME_ENDED:
+				if (gameResult?.result != "") return;
+				const result = messageJson.payload.result;
+				const by = messageJson.payload.status;
+				setGameResult({ result, by });
+				setDisabled(true);
+				setIsGameEnded(true);
+				break;
+			case RECONNECT:
+				handleReconnectGame(messageJson.payload);
+				break;
+			case GAME_TIME:
+				setUserData((prevUserData) => ({
+					...prevUserData,
+					timeConsumed:
+						messageJson.payload.playerNumber! === "player1"
+							? messageJson.payload.player1TimeConsumed!
+							: messageJson.payload.player2TimeConsumed!,
+				}));
+				setOpponentData((prevOpponentData) => ({
+					...prevOpponentData,
+					timeConsumed:
+						messageJson.payload.playerNumber! === "player1"
+							? messageJson.payload.player1TimeConsumed!
+							: messageJson.payload.player2TimeConsumed!,
+					linesCompleted: messageJson.payload.opponentLinesCompleted!,
+				}));
+				break;
+		}
+	}
+
 	useEffect(() => {
 		const newSocket = new WebSocket(
 			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
@@ -98,11 +181,11 @@ export default function GameInterface({
 				console.log("WebSocket connection closed");
 			}
 		};
-	}, []);
+	}, [sessionToken]);
 
 	useEffect(() => {
 		resetGame();
-	}, []);
+	}, [resetGame]);
 
 	useEffect(() => {
 		let startTimestamp = Date.now();
@@ -143,6 +226,7 @@ export default function GameInterface({
 		isGameEnded,
 		turn,
 		userData.isCardFilled,
+		userData.playerNumber,
 		opponentData.isCardFilled,
 	]);
 
@@ -157,7 +241,7 @@ export default function GameInterface({
 			);
 			setUserData((prevUserData) => ({ ...prevUserData, isCardFilled: true }));
 		}
-	}, [nextNumber, card]);
+	}, [nextNumber, card, userData.isCardFilled]);
 
 	function generateEmptyCard(): BingoCell[][] {
 		return Array(5)
@@ -213,71 +297,6 @@ export default function GameInterface({
 				},
 			}),
 		);
-	}
-
-	async function handleSocketMessage(message: MessageEvent) {
-		const messageJson = JSON.parse(message.data);
-		console.log(messageJson.type);
-		switch (messageJson.type) {
-			case INIT_GAME:
-				handleInitGame(messageJson.payload);
-				break;
-			case GAME_INVITE:
-				handleGameInvite(messageJson.payload);
-			case GRID_FILLED:
-				setOpponentData((prevOpponentData) => ({
-					...prevOpponentData,
-					isCardFilled: true,
-				}));
-				break;
-			case MOVE:
-				handleMove(messageJson.payload.number);
-				setUserData((prevUserData) => ({
-					...prevUserData,
-					timeConsumed:
-						prevUserData.playerNumber === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-				}));
-				setOpponentData((prevOpponentData) => ({
-					...prevOpponentData,
-					timeConsumed:
-						prevOpponentData.playerNumber === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-					linesCompleted: messageJson.payload.linesCompleted!,
-				}));
-				break;
-			case GAME_ENDED:
-				if (gameResult?.result != "") return;
-				const result = messageJson.payload.result;
-				const by = messageJson.payload.status;
-				console.log(messageJson.payload);
-				setGameResult({ result, by });
-				setDisabled(true);
-				setIsGameEnded(true);
-				break;
-			case RECONNECT:
-				handleReconnectGame(messageJson.payload);
-				break;
-			case GAME_TIME:
-				setUserData((prevUserData) => ({
-					...prevUserData,
-					timeConsumed:
-						messageJson.payload.playerNumber! === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-				}));
-				setOpponentData((prevOpponentData) => ({
-					...prevOpponentData,
-					timeConsumed:
-						messageJson.payload.playerNumber! === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-					linesCompleted: messageJson.payload.opponentLinesCompleted!,
-				}));
-				break;
-		}
 	}
 
 	function handleInitGame(payload: Payload) {
@@ -397,32 +416,6 @@ export default function GameInterface({
 		}
 		setNextNumber(26);
 		return grid;
-	}
-
-	function resetGame() {
-		setCard(generateEmptyCard());
-		setNextNumber(1);
-		setTurn("player1");
-		setGameResult({ result: "", by: "" });
-		setLastNumber(null);
-		setIsGameStarted(false);
-		setIsGameEnded(false);
-		setDisabled(false);
-
-		setUserData({
-			...userData,
-			isCardFilled: false,
-			playerNumber: "",
-			linesCompleted: 0,
-			timeConsumed: 0,
-		});
-		setOpponentData({
-			...opponentData,
-			isCardFilled: false,
-			playerNumber: "",
-			linesCompleted: 0,
-			timeConsumed: 0,
-		});
 	}
 
 	function markNumber(number: number) {
@@ -588,43 +581,12 @@ export default function GameInterface({
 								)}
 							</Button>
 
-							<div className="space-y-4">
-								<h2 className="text-lg font-semibold flex items-center gap-2">
-									<Users className="h-5 w-5" />
-									Friends
-								</h2>
-								{userFriends.length === 0 ? (
-									<p className="text-muted-foreground">No friends yet.</p>
-								) : (
-									<ScrollArea>
-										<div className="space-y-4">
-											{userFriends.map((user) => (
-												<Card key={user.id} className="p-4">
-													<div className="flex items-center gap-4">
-														<Avatar className="h-12 w-12">
-															<AvatarImage src={user.image!} />
-															<AvatarFallback>
-																{user.name![0].toUpperCase()}
-															</AvatarFallback>
-														</Avatar>
-														<div className="flex-1">
-															<h3 className="font-semibold">{user.name}</h3>
-															<p>{user.username}</p>
-														</div>
-														<Button
-															disabled={disabled}
-															size="sm"
-															onClick={() => handlePlayWithFriend(user.id!)}
-														>
-															Play
-														</Button>
-													</div>
-												</Card>
-											))}
-										</div>
-									</ScrollArea>
-								)}
-							</div>
+							<Friends
+								friends={friends}
+								disabled={disabled}
+								handlePlayWithFriend={handlePlayWithFriend}
+								session={session}
+							/>
 						</div>
 					</div>
 				</div>
@@ -632,14 +594,14 @@ export default function GameInterface({
 			<GameEndModal
 				isOpen={gameResult.result !== ""}
 				onClose={() => {
-					setUserData((prevUserData) => ({
-						...prevUserData,
-						timeConsumed: 0,
-					}));
-					setOpponentData((prevOpponentData) => ({
-						...prevOpponentData,
-						timeConsumed: 0,
-					}));
+					// setUserData((prevUserData) => ({
+					// 	...prevUserData,
+					// 	timeConsumed: 0,
+					// }));
+					// setOpponentData((prevOpponentData) => ({
+					// 	...prevOpponentData,
+					// 	timeConsumed: 0,
+					// }));
 					setGameResult({ result: "", by: "" });
 				}}
 				isWinner={

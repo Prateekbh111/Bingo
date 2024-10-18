@@ -20,7 +20,7 @@ export default function PendingRequests({
 
 	useEffect(() => {
 		pusherClient.subscribe(
-			toPusherKey(`user:${session.user.id}:friendRequests`)
+			toPusherKey(`user:${session.user.id}:friendRequests`),
 		);
 
 		const friendRequestHandler = (data: FriendRequest) => {
@@ -35,12 +35,12 @@ export default function PendingRequests({
 
 		return () => {
 			pusherClient.unsubscribe(
-				toPusherKey(`user:${session?.user.id}:friendRequests`)
+				toPusherKey(`user:${session?.user.id}:friendRequests`),
 			);
 
 			pusherClient.unbind("friendRequests");
 		};
-	}, []);
+	}, [session.user.id]);
 
 	return (
 		<Drawer>

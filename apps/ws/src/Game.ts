@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { GAME_ENDED, GAME_OVER, INIT_GAME, MOVE, RECONNECT } from "./messages";
 
-const GAME_TIME_MS = 2 * 60 * 1000;
+const GAME_TIME_MS = 0.25 * 60 * 1000;
 type GAME_STATUS = "BINGO" | "TIME_UP" | "PLAYER_EXIT";
 type GAME_RESULT = "PLAYER1_WINS" | "PLAYER2_WINS";
 
@@ -84,7 +84,6 @@ export class Game {
 	}
 
 	makeMove(user: User, move: number) {
-		const moveTimestamp = new Date(Date.now());
 		this.markNumber(move);
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
 		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
@@ -109,6 +108,8 @@ export class Game {
 			return;
 		}
 
+		const moveTimestamp = new Date(Date.now());
+
 		if (this.turn === "player1") {
 			this.player1TimeConsumed =
 				this.player1TimeConsumed +
@@ -120,6 +121,8 @@ export class Game {
 				this.player2TimeConsumed +
 				(moveTimestamp.getTime() - this.lastMoveTime.getTime());
 		}
+
+		this.turn = this.turn === "player1" ? "player2" : "player1";
 
 		this.resetMoveTimer();
 
@@ -150,8 +153,6 @@ export class Game {
 				}),
 			);
 		}
-		this.turn = this.turn === "player1" ? "player2" : "player1";
-		console.log(this.turn);
 	}
 
 	reconnect(user: User) {
@@ -271,6 +272,8 @@ export class Game {
 				: this.player2TimeConsumed);
 
 		this.moveTimer = setTimeout(() => {
+			console.log("TIME OUT HO GYA BC");
+			this.isGameOver = true;
 			this.endGame(
 				"TIME_UP",
 				turn === "player1" ? "PLAYER2_WINS" : "PLAYER1_WINS",

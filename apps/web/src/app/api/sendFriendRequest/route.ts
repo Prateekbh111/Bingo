@@ -15,12 +15,7 @@ export async function POST(req: Request) {
 		);
 	}
 
-	//TODO: delete this three line
 	const currUsername = session.user.username;
-	console.log("user Email: ", currUsername);
-	console.log("friend Email", friendUsername);
-
-	console.log("userId: ", session.user.id);
 
 	if (currUsername === friendUsername) {
 		return Response.json(
@@ -37,11 +32,8 @@ export async function POST(req: Request) {
 		},
 	});
 
-	console.log(userToAdd);
-
 	const idToAdd = userToAdd?.id;
 
-	console.log("idToAdd: ", idToAdd);
 	if (!idToAdd) {
 		return Response.json(
 			{ success: false, message: "User with this username does not exits." },
@@ -56,7 +48,6 @@ export async function POST(req: Request) {
 		},
 	});
 
-	console.log("isAlreadyFriendRequested: ", isAlreadyFriendRequested);
 	if (isAlreadyFriendRequested) {
 		return Response.json(
 			{ success: false, message: "Already Requested." },
@@ -71,7 +62,6 @@ export async function POST(req: Request) {
 		},
 	});
 
-	console.log("isAlreadyFriend: ", isAlreadyFriend);
 	if (isAlreadyFriend) {
 		return Response.json(
 			{ success: false, message: "Already Friends." },

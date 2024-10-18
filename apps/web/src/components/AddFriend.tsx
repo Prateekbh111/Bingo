@@ -22,17 +22,26 @@ export default function AddFriend() {
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
+		setIsSendingRequest(true);
 		const formData = new FormData(e.currentTarget);
 		const formDataObject = Object.fromEntries(formData.entries());
+		if (formDataObject.username.toString().trim() === "") {
+			toast({
+				title: "Wrong username",
+				duration: 1000,
+			});
+			setIsSendingRequest(false);
+			return;
+		}
 		console.log(formDataObject.username);
 		try {
-			setIsSendingRequest(true);
 			const response = await axios.post<ApiResponse>("/api/sendFriendRequest", {
 				friendUsername: formDataObject.username,
 			});
 			toast({
 				title: "Success",
 				description: `${response.data.message}`,
+				duration: 1000,
 			});
 		} catch (error) {
 			const axiosError = error as AxiosError<ApiResponse>;
@@ -41,11 +50,13 @@ export default function AddFriend() {
 			if (message) {
 				toast({
 					description: `${message}`,
+					duration: 1000,
 				});
 			} else {
 				toast({
 					title: "Uh oh! Something went wrong.",
 					description: "There was a problem with your request.",
+					duration: 1000,
 				});
 			}
 		} finally {
@@ -85,7 +96,7 @@ export default function AddFriend() {
 									/>
 								</div>
 								<div className="flex justify-end mt-4">
-									<Button type="submit">
+									<Button type="submit" disabled={isSendingRequest}>
 										{isSendingRequest ? (
 											<>
 												<LoaderCircle className="animate-spin mr-2  h-4 w-4" />{" "}

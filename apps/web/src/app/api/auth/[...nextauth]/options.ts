@@ -2,6 +2,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { type AuthOptions } from "next-auth";
+import SignInCallback from "next-auth";
 import { v4 as uuidv4 } from "uuid";
 
 export const authOptions: AuthOptions = {
@@ -14,10 +15,6 @@ export const authOptions: AuthOptions = {
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
 			profile: async (profile) => {
-				const existingUser = await prisma.user.findUnique({
-					where: { email: profile.email },
-				});
-				if (existingUser) return existingUser;
 				const randomUsername = `user_${uuidv4().slice(0, 6)}`;
 				return {
 					id: profile.sub,
@@ -30,6 +27,39 @@ export const authOptions: AuthOptions = {
 		}),
 	],
 	callbacks: {
+		async signIn({ account, profile }): Promise<boolean> {
+			// Check if the user already exists based on their email
+			const existingUser = await prisma.user.findUnique({
+				where: { email: profile?.email },
+			});
+
+			if (existingUser) {
+				console.log("existingUser");
+				await prisma.account.upsert({
+					where: {
+						provider_providerAccountId: {
+							provider: account?.provider!,
+							providerAccountId: account?.providerAccountId!,
+						},
+					},
+					update: {},
+					create: {
+						userId: existingUser.id,
+						provider: account?.provider!,
+						providerAccountId: account?.providerAccountId!,
+						type: account?.type!,
+						access_token: account?.access_token,
+						id_token: account?.id_token,
+						refresh_token: account?.refresh_token,
+						expires_at: account?.expires_at,
+					},
+				});
+				return true;
+			}
+			console.log("new User");
+
+			return true;
+		},
 		async jwt({ token, user, trigger, session }) {
 			if (trigger == "update") {
 				token.username = session.username;

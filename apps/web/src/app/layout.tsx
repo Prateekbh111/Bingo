@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
+import Head from "next/head";
 
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
@@ -27,6 +28,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" className="" suppressHydrationWarning>
+			<Head>
+				<script
+					async
+					src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1614796469628007"
+					crossOrigin="anonymous"
+				></script>
+			</Head>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>

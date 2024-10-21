@@ -31,7 +31,7 @@ export default function PlayerInfo({
 				{minutes < 10 ? "0" : ""}
 				{minutes}:{remainingSeconds < 10 ? "0" : ""}
 				{remainingSeconds}
-				{remainingSeconds <= 0 && `:${remainingMillis}`}
+				{minutes <= 0 && remainingSeconds <= 0 && `:${remainingMillis}`}
 			</div>
 		);
 	};

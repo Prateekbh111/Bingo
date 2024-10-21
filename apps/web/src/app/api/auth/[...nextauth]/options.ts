@@ -51,9 +51,12 @@ export const authOptions: AuthOptions = {
 			}
 			return session;
 		},
+		async redirect({ url, baseUrl }) {
+			return baseUrl;
+		},
 	},
 	pages: {
-		signIn: "/sign-in",
+		signIn: "/login",
 	},
 
 	secret: process.env.NEXTAUTH_SECRET,

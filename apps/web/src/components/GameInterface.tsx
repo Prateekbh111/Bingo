@@ -513,7 +513,7 @@ export default function GameInterface({
 											variant={cell.marked ? "default" : "outline"}
 											className={`p-0 font-bold text-lg ${
 												cell.marked && "bg-primary text-primary-foreground"
-											} ${lastNumber && cell.number === lastNumber && "ring-4 ring-foreground"}`}
+											} ${lastNumber && cell.number === lastNumber && "ring-4 dark:ring-neutral-400 ring-neutral-600"}`}
 											style={{
 												width: `${cellSize}px`,
 												height: `${cellSize}px`,

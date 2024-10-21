@@ -35,25 +35,27 @@ export const authOptions: AuthOptions = {
 
 			if (existingUser) {
 				console.log("existingUser");
-				await prisma.account.upsert({
-					where: {
-						provider_providerAccountId: {
-							provider: account?.provider!,
-							providerAccountId: account?.providerAccountId!,
+				if (account) {
+					await prisma.account.upsert({
+						where: {
+							provider_providerAccountId: {
+								provider: account?.provider,
+								providerAccountId: account?.providerAccountId,
+							},
 						},
-					},
-					update: {},
-					create: {
-						userId: existingUser.id,
-						provider: account?.provider!,
-						providerAccountId: account?.providerAccountId!,
-						type: account?.type!,
-						access_token: account?.access_token,
-						id_token: account?.id_token,
-						refresh_token: account?.refresh_token,
-						expires_at: account?.expires_at,
-					},
-				});
+						update: {},
+						create: {
+							userId: existingUser.id,
+							provider: account?.provider,
+							providerAccountId: account?.providerAccountId,
+							type: account?.type,
+							access_token: account?.access_token,
+							id_token: account?.id_token,
+							refresh_token: account?.refresh_token,
+							expires_at: account?.expires_at,
+						},
+					});
+				}
 				return true;
 			}
 			console.log("new User");

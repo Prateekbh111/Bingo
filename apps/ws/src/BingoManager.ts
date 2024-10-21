@@ -82,9 +82,20 @@ export class BingoManager {
 				//if there is a pending user to connect then add current user to it
 				//otherwise make current user to pending user
 				if (this.pendingUser && this.pendingUser.id !== user.id) {
-					const game = new Game(this.pendingUser, user);
-					this.games.push(game);
-					this.pendingUser = null;
+					if (
+						this.pendingUser.socket.readyState !== WebSocket.CLOSED &&
+						this.pendingUser.socket.readyState !== WebSocket.CLOSING
+					) {
+						const game = new Game(this.pendingUser, user);
+						this.games.push(game);
+						this.pendingUser = null;
+					} else {
+						console.log("found a user which is offline now");
+						this.users = this.users.filter(
+							(user) => user.id != this.pendingUser?.id,
+						);
+						this.pendingUser = user;
+					}
 				} else {
 					this.pendingUser = user;
 				}

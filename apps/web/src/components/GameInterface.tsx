@@ -116,7 +116,6 @@ export default function GameInterface({
 				}));
 				break;
 			case MOVE:
-				console.log(messageJson.payload);
 				handleMove(messageJson.payload.number);
 				setUserData((prevUserData) => ({
 					...prevUserData,
@@ -514,7 +513,7 @@ export default function GameInterface({
 											variant={cell.marked ? "default" : "outline"}
 											className={`p-0 font-bold text-lg ${
 												cell.marked && "bg-primary text-primary-foreground"
-											} ${lastNumber && cell.number === lastNumber && "ring-4 ring-emerald-900"}`}
+											} ${lastNumber && cell.number === lastNumber && "ring-4 ring-foreground"}`}
 											style={{
 												width: `${cellSize}px`,
 												height: `${cellSize}px`,

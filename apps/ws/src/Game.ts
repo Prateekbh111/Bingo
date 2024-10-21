@@ -74,29 +74,6 @@ export class Game {
 		const linesCompletedByPlayer1 = this.calculateLinesCompleted("player1");
 		const linesCompletedByPlayer2 = this.calculateLinesCompleted("player2");
 
-		if (user.id === this.player1.id && linesCompletedByPlayer1 === 5) {
-			this.endGame("BINGO", "PLAYER1_WINS");
-			return;
-		}
-
-		if (user.id === this.player2.id && linesCompletedByPlayer2 === 5) {
-			this.endGame("BINGO", "PLAYER2_WINS");
-
-			return;
-		}
-
-		if (linesCompletedByPlayer1 === 5) {
-			this.endGame("BINGO", "PLAYER1_WINS");
-
-			return;
-		}
-
-		if (linesCompletedByPlayer2 === 5) {
-			this.endGame("BINGO", "PLAYER2_WINS");
-
-			return;
-		}
-
 		const moveTimestamp = new Date(Date.now());
 
 		if (this.turn === "player1") {
@@ -141,6 +118,29 @@ export class Game {
 					},
 				}),
 			);
+		}
+
+		if (user.id === this.player1.id && linesCompletedByPlayer1 === 5) {
+			this.endGame("BINGO", "PLAYER1_WINS");
+			return;
+		}
+
+		if (user.id === this.player2.id && linesCompletedByPlayer2 === 5) {
+			this.endGame("BINGO", "PLAYER2_WINS");
+
+			return;
+		}
+
+		if (linesCompletedByPlayer1 === 5) {
+			this.endGame("BINGO", "PLAYER1_WINS");
+
+			return;
+		}
+
+		if (linesCompletedByPlayer2 === 5) {
+			this.endGame("BINGO", "PLAYER2_WINS");
+
+			return;
 		}
 	}
 

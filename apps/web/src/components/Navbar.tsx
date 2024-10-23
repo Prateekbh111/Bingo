@@ -5,6 +5,7 @@ import { Session } from "next-auth";
 import ThemeSwitch from "./ThemeSwitch";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
+import BingoLogo from "./BingoLogo";
 
 export default async function Navbar({
 	session,
@@ -29,19 +30,13 @@ export default async function Navbar({
 						<div className="flex h-16 shrink-0 items-center gap-2 px-4">
 							<SidebarTrigger />
 							<Separator orientation="vertical" className="mr-2 h-4" />
-							<Link
-								href={"/"}
-								className="text-3xl md:text-3xl font-bold tracking-tight text-foreground "
-							>
-								<span className="text-primary">B</span>
-								ingo
-							</Link>
+							<BingoLogo />
 						</div>
 					)}
 					{floating && (
 						<Link
 							href={"/"}
-							className="text-3xl md:text-3xl font-bold tracking-tight text-foreground "
+							className="text-3xl md:text-3xl font-bold tracking-tight text-foreground cursor-pointer"
 						>
 							<span className="text-primary">B</span>
 							ingo

@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Session } from "next-auth";
-import { SidebarMenuButton } from "./ui/sidebar";
+import { SidebarMenuButton, useSidebar } from "./ui/sidebar";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export function UserDropdownMenu({ session }: { session: Session }) {
 	const router = useRouter();
+	const { setOpen, setOpenMobile } = useSidebar();
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -62,7 +63,13 @@ export function UserDropdownMenu({ session }: { session: Session }) {
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem onClick={() => router.push("/profile")}>
+					<DropdownMenuItem
+						onClick={() => {
+							setOpen(false);
+							setOpenMobile(false);
+							router.push("/profile");
+						}}
+					>
 						<User className="mr-2 h-4 w-4" />
 						<span>Profile</span>
 					</DropdownMenuItem>

@@ -69,7 +69,7 @@ export default function ProfileUpdateCard({ session }: { session: Session }) {
 	}
 
 	return (
-		<div className="bg-background flex items-center justify-center p-4 w-full">
+		<div className="md:pt-24 bg-background flex items-center justify-center p-4 w-full">
 			<Card className="w-full max-w-lg">
 				<CardHeader>
 					<CardTitle>Edit Profile</CardTitle>

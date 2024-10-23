@@ -23,6 +23,14 @@ type GameResult = {
 	by: string;
 };
 
+enum GameStatus {
+	IN_PROGRESS,
+	COMPLETED,
+	ABANDONED,
+	TIME_UP,
+	PLAYER_EXIT,
+}
+
 type Payload = {
 	playerNumber?: string;
 	otherPlayer?: Player;

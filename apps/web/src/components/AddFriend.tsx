@@ -66,52 +66,86 @@ export default function AddFriend() {
 	}
 
 	return (
-		<Drawer>
-			<DrawerTrigger asChild>
-				<div className="flex justify-between items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
-					<div className="flex">
-						<PlusIcon className="w-5 h-5 mr-2" />
-						Add Friend
-					</div>
-				</div>
-			</DrawerTrigger>
-			<DrawerContent className="">
-				<DrawerTitle></DrawerTitle>
-				<div className="mx-auto w-full flex justify-center p-4">
-					<Card className="w-[350px]">
-						<CardHeader>
-							<CardTitle>Add Friend</CardTitle>
-							<CardDescription>
-								Add friend using username to play bingo.
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<form onSubmit={(e) => handleSubmit(e)}>
-								<div className="flex flex-col space-y-1.5">
-									<Label htmlFor="username">Username</Label>
-									<Input
-										name="username"
-										id="username"
-										placeholder="Friend's username"
-									/>
-								</div>
-								<div className="flex justify-end mt-4">
-									<Button type="submit" disabled={isSendingRequest}>
-										{isSendingRequest ? (
-											<>
-												<LoaderCircle className="animate-spin mr-2  h-4 w-4" />{" "}
-												Sending
-											</>
-										) : (
-											"Send Request"
-										)}
-									</Button>
-								</div>
-							</form>
-						</CardContent>
-					</Card>
-				</div>
-			</DrawerContent>
-		</Drawer>
+		<div className="mx-auto w-full flex justify-center p-4">
+			<Card className="w-[350px]">
+				<CardHeader>
+					<CardTitle>Add Friend</CardTitle>
+					<CardDescription>
+						Add friend using username to play bingo.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<form onSubmit={(e) => handleSubmit(e)}>
+						<div className="flex flex-col space-y-1.5">
+							<Label htmlFor="username">Username</Label>
+							<Input
+								name="username"
+								id="username"
+								placeholder="Friend's username"
+							/>
+						</div>
+						<div className="flex justify-end mt-4">
+							<Button type="submit" disabled={isSendingRequest}>
+								{isSendingRequest ? (
+									<>
+										<LoaderCircle className="animate-spin mr-2  h-4 w-4" />{" "}
+										Sending
+									</>
+								) : (
+									"Send Request"
+								)}
+							</Button>
+						</div>
+					</form>
+				</CardContent>
+			</Card>
+		</div>
+		// <Drawer>
+		// 	<DrawerTrigger asChild>
+		// 		<div className="flex justify-between items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+		// 			<div className="flex">
+		// 				<PlusIcon className="w-5 h-5 mr-2" />
+		// 				Add Friend
+		// 			</div>
+		// 		</div>
+		// 	</DrawerTrigger>
+		// 	<DrawerContent className="">
+		// 		<DrawerTitle></DrawerTitle>
+		// 		<div className="mx-auto w-full flex justify-center p-4">
+		// 			<Card className="w-[350px]">
+		// 				<CardHeader>
+		// 					<CardTitle>Add Friend</CardTitle>
+		// 					<CardDescription>
+		// 						Add friend using username to play bingo.
+		// 					</CardDescription>
+		// 				</CardHeader>
+		// 				<CardContent>
+		// 					<form onSubmit={(e) => handleSubmit(e)}>
+		// 						<div className="flex flex-col space-y-1.5">
+		// 							<Label htmlFor="username">Username</Label>
+		// 							<Input
+		// 								name="username"
+		// 								id="username"
+		// 								placeholder="Friend's username"
+		// 							/>
+		// 						</div>
+		// 						<div className="flex justify-end mt-4">
+		// 							<Button type="submit" disabled={isSendingRequest}>
+		// 								{isSendingRequest ? (
+		// 									<>
+		// 										<LoaderCircle className="animate-spin mr-2  h-4 w-4" />{" "}
+		// 										Sending
+		// 									</>
+		// 								) : (
+		// 									"Send Request"
+		// 								)}
+		// 							</Button>
+		// 						</div>
+		// 					</form>
+		// 				</CardContent>
+		// 			</Card>
+		// 		</div>
+		// 	</DrawerContent>
+		// </Drawer>
 	);
 }

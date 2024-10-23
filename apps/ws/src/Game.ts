@@ -9,6 +9,7 @@ import {
 	MOVE,
 	RECONNECT,
 } from "./types";
+import { prisma } from "./db/prisma";
 
 interface User {
 	id: string;
@@ -27,10 +28,12 @@ export class Game {
 	public isPlayer2GridFilled: boolean;
 	public turn: string;
 	public isGameOver: boolean;
+	public gameId: string = "";
 	private moveTimer: NodeJS.Timeout | null = null;
 	private player1TimeConsumed = 0;
 	private player2TimeConsumed = 0;
 	private lastMoveTime = new Date(Date.now());
+	private startTime = new Date(Date.now());
 
 	constructor(player1: User, player2: User) {
 		this.player1 = player1;
@@ -67,6 +70,7 @@ export class Game {
 				},
 			}),
 		);
+		this.addGameToDb();
 	}
 
 	makeMove(user: User, move: number) {
@@ -165,6 +169,15 @@ export class Game {
 			}),
 		);
 		this.clearMoveTimer();
+		const updatedGame = await prisma.game.update({
+			data: {
+				status: "COMPLETED",
+				result: result,
+				endAt: new Date(Date.now()),
+			},
+			where: { id: this.gameId },
+		});
+		console.log(updatedGame);
 	}
 
 	async resetMoveTimer() {
@@ -263,6 +276,27 @@ export class Game {
 				cell.number === number ? { ...cell, marked: true } : cell,
 			),
 		);
+	}
+
+	async addGameToDb() {
+		const game = await prisma.game.create({
+			data: {
+				startAt: this.startTime,
+				player1: {
+					connect: {
+						id: this.player1.id,
+					},
+				},
+				player2: {
+					connect: {
+						id: this.player2.id ?? " ",
+					},
+				},
+				status: "IN_PROGRESS",
+			},
+		});
+		this.gameId = game.id;
+		console.log(game);
 	}
 
 	getPlayer1TimeConsumed() {

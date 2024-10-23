@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/SideBar";
 
 export default async function HomePage() {
 	const session = await getServerSession(authOptions);
@@ -36,13 +38,13 @@ export default async function HomePage() {
 	);
 
 	return (
-		<div className="w-full">
-			<Navbar session={session!} withSideBar />
+		<>
+			<Navbar session={session!} withSideBar floating={false} />
 			<GameInterface
 				friends={friends}
 				session={session}
 				sessionToken={sessionToken ? sessionToken.value : undefined}
 			/>
-		</div>
+		</>
 	);
 }

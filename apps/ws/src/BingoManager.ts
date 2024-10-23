@@ -86,6 +86,8 @@ export class BingoManager {
 						this.pendingUser.socket.readyState !== WebSocket.CLOSED &&
 						this.pendingUser.socket.readyState !== WebSocket.CLOSING
 					) {
+						//if user has leaved the game end the game
+						//TODO: later implement resigning error
 						const game = new Game(this.pendingUser, user);
 						this.games.push(game);
 						this.pendingUser = null;
@@ -189,6 +191,10 @@ export class BingoManager {
 			}
 
 			if (message.type == MOVE) {
+				if (message.payload.number <= 0 || message.payload.number > 25) {
+					console.log("Invalid move!!");
+					return;
+				}
 				const game = this.games.find(
 					(game) => game.player1.id === user.id || game.player2.id === user.id,
 				);

@@ -12,7 +12,7 @@ export default async function layout({
 	const session = await getServerSession(authOptions);
 	if (!session) notFound();
 	return (
-		<SidebarProvider>
+		<SidebarProvider defaultOpen={false}>
 			<AppSidebar session={session!} />
 			<main className="w-full">{children}</main>
 		</SidebarProvider>

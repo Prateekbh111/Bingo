@@ -82,6 +82,9 @@ export default function AddFriend() {
 								name="username"
 								id="username"
 								placeholder="Friend's username"
+								autoComplete="off"
+								onTouchStart={(e) => e.preventDefault()}
+								onTouchStartCapture={(e) => e.preventDefault()}
 							/>
 						</div>
 						<div className="flex justify-end mt-4">

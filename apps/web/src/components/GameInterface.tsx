@@ -541,6 +541,14 @@ export default function GameInterface({
 							Fill randomly
 						</Button>
 					)}
+					{isGameEnded && gameResult.result == "" && (
+						<Button
+							className="hidden md:block opacity-0 md:opacity-100"
+							onClick={() => resetGame()}
+						>
+							Play Again
+						</Button>
+					)}
 				</div>
 				{isGameStarted && (
 					<PlayerInfo
@@ -556,6 +564,14 @@ export default function GameInterface({
 					onClick={() => setCard(generateRandomBingoGrid())}
 				>
 					Fill randomly
+				</Button>
+			)}
+			{isGameEnded && gameResult.result == "" && (
+				<Button
+					className="block md:hidden opacity-100 md:opacity-0"
+					onClick={() => resetGame()}
+				>
+					Play Again
 				</Button>
 			)}
 			{!isGameStarted && (

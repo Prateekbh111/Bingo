@@ -1,6 +1,6 @@
 "use client";
 
-import { GAME_TIME_MS } from "@/lib/utils";
+import { CARDFILL_TIME_MS, GAME_TIME_MS } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface PlayerInfoProps {
@@ -16,8 +16,8 @@ export default function PlayerInfo({
 }: PlayerInfoProps) {
 	const bingoLetters = ["B", "I", "N", "G", "O"];
 
-	const getTimer = (timeConsumed: number) => {
-		const timeLeftMs = GAME_TIME_MS - timeConsumed;
+	const getTimer = (timeConsumed: number, TotalTime: number) => {
+		const timeLeftMs = TotalTime - timeConsumed;
 		const minutes = Math.floor(timeLeftMs / (1000 * 60));
 		const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
 		const remainingMillis = Math.floor(
@@ -26,7 +26,7 @@ export default function PlayerInfo({
 
 		return (
 			<div
-				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${isTurn && "animate-pulse duration-1000"}`}
+				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${playerData?.isCardFilled ? (isTurn ? "animate-pulse duration-1000" : "") : "animate-pulse duration-1000"} ${minutes <= 0 && remainingSeconds <= 5 && "bg-red-500"}`}
 			>
 				{minutes < 10 ? "0" : ""}
 				{minutes}:{remainingSeconds < 10 ? "0" : ""}
@@ -62,7 +62,12 @@ export default function PlayerInfo({
 						)}
 					</p>
 				</div>
-				{getTimer(playerData ? playerData.timeConsumed! : 0)}
+				{playerData?.isCardFilled
+					? getTimer(playerData ? playerData.timeConsumed! : 0, GAME_TIME_MS)
+					: getTimer(
+							playerData ? playerData.gridFillTimeConsumed! : 0,
+							CARDFILL_TIME_MS,
+						)}
 				<div className="flex justify-center items-center">
 					{bingoLetters.map((letter, index) => (
 						<div

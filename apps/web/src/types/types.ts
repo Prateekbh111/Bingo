@@ -13,6 +13,7 @@ type Player = {
 type PlayerData = {
 	isCardFilled: boolean;
 	timeConsumed: number;
+	gridFillTimeConsumed: number;
 	linesCompleted: number;
 	playerNumber: string;
 	data: Player | null;

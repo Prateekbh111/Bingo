@@ -131,19 +131,16 @@ export class Game {
 
 		if (user.id === this.player2.id && linesCompletedByPlayer2 === 5) {
 			this.endGame("BINGO", "PLAYER2_WINS");
-
 			return;
 		}
 
 		if (linesCompletedByPlayer1 === 5) {
 			this.endGame("BINGO", "PLAYER1_WINS");
-
 			return;
 		}
 
 		if (linesCompletedByPlayer2 === 5) {
 			this.endGame("BINGO", "PLAYER2_WINS");
-
 			return;
 		}
 	}

@@ -66,7 +66,7 @@ export default function AddFriend() {
 	}
 
 	return (
-		<div className="mx-auto w-full flex justify-center p-4">
+		<div className="mx-auto w-full flex justify-center ">
 			<Card className="w-[350px]">
 				<CardHeader>
 					<CardTitle>Add Friend</CardTitle>

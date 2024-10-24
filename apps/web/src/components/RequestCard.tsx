@@ -3,7 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Button } from "./ui/button";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export function RequestCard({
 	friendRequest,
@@ -69,12 +70,19 @@ export function RequestCard({
 	return (
 		<li
 			key={friendRequest.id}
-			className="md:flex justify-between items-center p-4 space-y-2 bg-card rounded-lg border "
+			className=" p-3 space-y-2 bg-card rounded-lg border "
 		>
-			<div>
-				<p className="text-2xl font-semibold leading-none tracking-tight">
-					{friendRequest.name}
-				</p>
+			<div className="flex items-center gap-4">
+				<Avatar className="h-12 w-12">
+					<AvatarImage src={friendRequest.image!} />
+					<AvatarFallback>
+						{friendRequest.name![0].toUpperCase()}
+					</AvatarFallback>
+				</Avatar>
+				<div className="flex-1">
+					<h3 className="font-semibold">{friendRequest.name}</h3>
+					<p>{friendRequest.username}</p>
+				</div>
 			</div>
 			<div className="flex space-x-4">
 				<Button onClick={() => handleAcceptRequest(friendRequest!)}>
@@ -84,7 +92,7 @@ export function RequestCard({
 							Accepting...
 						</>
 					) : (
-						<Check />
+						"Accept"
 					)}
 				</Button>
 				<Button onClick={() => handleRejectRequest(friendRequest!)}>
@@ -94,7 +102,7 @@ export function RequestCard({
 							Rejecting...
 						</>
 					) : (
-						<X />
+						"Reject"
 					)}
 				</Button>
 			</div>

@@ -41,12 +41,12 @@ export default function PendingRequests({
 	}, [session.user.id]);
 
 	return (
-		<div className="mx-auto w-full flex justify-center p-4">
+		<div className="mx-auto w-full flex justify-center">
 			{UserFriendRequests.length === 0 ? (
-				<p>No friend requests</p>
+				<p className="text-muted-foreground">Nothing to see here</p>
 			) : (
-				<ScrollArea className="h-72 max-w-xl w-full ">
-					<ul className="w-full  flex flex-col space-y-1.5 p-6">
+				<ScrollArea className="h-48 md:h-56 max-w-xl w-full ">
+					<ul className="w-full  flex flex-col space-y-1.5">
 						{UserFriendRequests.map((friendRequest) => (
 							<RequestCard
 								friendRequest={friendRequest}

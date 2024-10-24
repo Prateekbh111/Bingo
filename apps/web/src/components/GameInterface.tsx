@@ -24,6 +24,7 @@ import {
 import PlayerInfo from "./PlayerInfo";
 import GameEndModal from "./GameEndModal";
 import Friends from "./Friends";
+import { useSidebar } from "./ui/sidebar";
 
 export default function GameInterface({
 	friends,
@@ -35,6 +36,7 @@ export default function GameInterface({
 	sessionToken: string | undefined;
 }) {
 	const { toast } = useToast();
+	const { open } = useSidebar();
 
 	const socketRef = useRef<WebSocket | null>(null);
 	const [disabled, setDisabled] = useState<boolean>(false);
@@ -323,11 +325,6 @@ export default function GameInterface({
 			title: "Reconnected",
 			description: "You are connected to previously uncompleted game.",
 		});
-		console.log(payload);
-		console.log("player1-server: ", payload.player1TimeConsumed);
-
-		console.log("player2-server: ", payload.player2TimeConsumed);
-
 		setCard(payload.board!.length === 0 ? generateEmptyCard() : payload.board!);
 		setTurn(payload.turn!);
 		setNextNumber(payload.board!.length === 0 ? 1 : 26);
@@ -477,8 +474,12 @@ export default function GameInterface({
 	}
 
 	return (
-		<div className="bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full">
-			<div className="md:pt-24 flex flex-col md:flex-row md:gap-10 justify-center items-center h-full w-full ">
+		<div
+			className={`bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full ${open && "md:flex-col lg:flex-row"}`}
+		>
+			<div
+				className={`md:pt-24 flex flex-col md:flex-row md:gap-10 justify-center items-center h-full w-full  `}
+			>
 				{isGameStarted && (
 					<PlayerInfo
 						playerData={userData}
@@ -492,7 +493,7 @@ export default function GameInterface({
 					>
 						<CardContent className="p-4">
 							<div
-								className="grid grid-cols-5 gap-2"
+								className="grid grid-cols-5 gap-1 md:gap-2"
 								ref={(el) => {
 									if (el) {
 										const resizeObserver = new ResizeObserver((entries) => {

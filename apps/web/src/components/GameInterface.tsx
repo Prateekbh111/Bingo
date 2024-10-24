@@ -10,6 +10,7 @@ import { Check, Gamepad2, LoaderCircle, LoaderCircleIcon } from "lucide-react";
 import { ToastAction } from "./ui/toast";
 import {
 	ACCEPT_GAME_INVITE,
+	CARDFILL_TIME_MS,
 	checkBingoWin,
 	GAME_ENDED,
 	GAME_INVITE,
@@ -58,6 +59,7 @@ export default function GameInterface({
 	const [userData, setUserData] = useState<PlayerData>({
 		isCardFilled: false,
 		timeConsumed: 0,
+		gridFillTimeConsumed: 0,
 		linesCompleted: 0,
 		playerNumber: "",
 		data: {
@@ -71,6 +73,7 @@ export default function GameInterface({
 	const [opponentData, setOpponentData] = useState<PlayerData>({
 		isCardFilled: false,
 		timeConsumed: 0,
+		gridFillTimeConsumed: 0,
 		linesCompleted: 0,
 		playerNumber: "",
 		data: null,
@@ -92,6 +95,7 @@ export default function GameInterface({
 			playerNumber: "",
 			linesCompleted: 0,
 			timeConsumed: 0,
+			gridFillTimeConsumed: 0,
 		}));
 		setOpponentData((prevOpponentData) => ({
 			...prevOpponentData,
@@ -99,6 +103,7 @@ export default function GameInterface({
 			playerNumber: "",
 			linesCompleted: 0,
 			timeConsumed: 0,
+			gridFillTimeConsumed: 0,
 		}));
 	}, []);
 
@@ -231,6 +236,46 @@ export default function GameInterface({
 	]);
 
 	useEffect(() => {
+		let startTimestamp = Date.now();
+		let interval: NodeJS.Timeout;
+
+		const updateGridFillTimes = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTimestamp;
+
+			if (!userData.isCardFilled) {
+				setUserData((prevUserData) => ({
+					...prevUserData,
+					gridFillTimeConsumed: prevUserData.gridFillTimeConsumed + elapsedTime,
+				}));
+			}
+
+			if (!opponentData.isCardFilled) {
+				setOpponentData((prevOpponentData) => ({
+					...prevOpponentData,
+					gridFillTimeConsumed:
+						prevOpponentData.gridFillTimeConsumed + elapsedTime,
+				}));
+			}
+
+			startTimestamp = currentTime;
+		};
+
+		if (isGameStarted && !isGameEnded) {
+			interval = setInterval(updateGridFillTimes, 100);
+
+			return () => {
+				clearInterval(interval);
+			};
+		}
+	}, [
+		isGameStarted,
+		isGameEnded,
+		userData.isCardFilled,
+		opponentData.isCardFilled,
+	]);
+
+	useEffect(() => {
 		setUserData((prevUserData) => ({
 			...prevUserData,
 			linesCompleted: checkBingoWin(card),
@@ -263,10 +308,15 @@ export default function GameInterface({
 		);
 	}
 
-	if (gameResult.result === "" && userData.timeConsumed > GAME_TIME_MS) {
+	if (
+		gameResult.result === "" &&
+		(userData.timeConsumed > GAME_TIME_MS ||
+			userData.gridFillTimeConsumed > CARDFILL_TIME_MS)
+	) {
 		setUserData((prevUserData) => ({
 			...prevUserData,
 			timeConsumed: GAME_TIME_MS,
+			gridFillTimeConsumed: CARDFILL_TIME_MS,
 		}));
 		socketRef.current?.send(
 			JSON.stringify({
@@ -281,10 +331,15 @@ export default function GameInterface({
 		);
 	}
 
-	if (gameResult.result === "" && opponentData.timeConsumed > GAME_TIME_MS) {
+	if (
+		gameResult.result === "" &&
+		(opponentData.timeConsumed > GAME_TIME_MS ||
+			opponentData.gridFillTimeConsumed > CARDFILL_TIME_MS)
+	) {
 		setOpponentData((prevOpponentData) => ({
 			...prevOpponentData,
 			timeConsumed: GAME_TIME_MS,
+			gridFillTimeConsumed: CARDFILL_TIME_MS,
 		}));
 		socketRef.current?.send(
 			JSON.stringify({
@@ -533,7 +588,7 @@ export default function GameInterface({
 							</div>
 						</CardContent>
 					</Card>
-					{isGameStarted && !userData.isCardFilled && (
+					{isGameStarted && !isGameEnded && !userData.isCardFilled && (
 						<Button
 							className="hidden md:block opacity-0 md:opacity-100"
 							onClick={() => setCard(generateRandomBingoGrid())}
@@ -558,7 +613,7 @@ export default function GameInterface({
 					/>
 				)}
 			</div>
-			{isGameStarted && !userData.isCardFilled && (
+			{isGameStarted && !isGameEnded && !userData.isCardFilled && (
 				<Button
 					className="block md:hidden opacity-100 md:opacity-0"
 					onClick={() => setCard(generateRandomBingoGrid())}

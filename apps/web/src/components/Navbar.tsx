@@ -18,7 +18,7 @@ export default async function Navbar({
 }) {
 	return (
 		<nav
-			className={`md:fixed w-full ${floating && "top-2 md:top-6 mt-2 md:mt-0"} `}
+			className={`md:fixed w-full z-50 ${floating && "top-2 md:top-6 mt-2 md:mt-0"} `}
 		>
 			<nav
 				className={`z-50 flex items-center gap-2  rounded-2xl  ${floating && "border mx-2 md:mx-auto md:max-w-6xl md:shadow-lg"}`}

@@ -59,68 +59,75 @@ export default function RecentlyPlayedGames({
 					<CardDescription>Your latest Bingo matches</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<ScrollArea className="h-[300px] pr-4">
-						{playedGames.map((game) => (
-							<div key={game.id} className="flex items-center space-x-4 mb-4">
-								<Avatar>
-									<AvatarImage
-										src={
+					{playedGames.length > 0 && (
+						<ScrollArea className="h-[300px] pr-4">
+							{playedGames.map((game) => (
+								<div key={game.id} className="flex items-center space-x-4 mb-4">
+									<Avatar>
+										<AvatarImage
+											src={
+												game.player1.id === session.user.id
+													? game.player2.image!
+													: game.player1.image!
+											}
+											alt={
+												game.player1.id === session.user.id
+													? game.player2.name!
+													: game.player1.name!
+											}
+										/>
+										<AvatarFallback>
+											{game.player1.id === session.user.id
+												? game.player2.name![0]
+												: game.player1.name![0]}
+										</AvatarFallback>
+									</Avatar>
+									<div className="flex-1 space-y-1">
+										<p className="text-sm font-medium leading-none">
+											{game.player1.id === session.user.id
+												? game.player2.username!
+												: game.player1.username!}
+										</p>
+										<p className="text-sm text-muted-foreground">
+											{formatDate(game.startAt!.toString())}
+										</p>
+									</div>
+									<Badge
+										variant={
+											game.result === "PLAYER1_WINS" &&
 											game.player1.id === session.user.id
-												? game.player2.image!
-												: game.player1.image!
-										}
-										alt={
-											game.player1.id === session.user.id
-												? game.player2.name!
-												: game.player1.name!
-										}
-									/>
-									<AvatarFallback>
-										{game.player1.id === session.user.id
-											? game.player2.name![0]
-											: game.player1.name![0]}
-									</AvatarFallback>
-								</Avatar>
-								<div className="flex-1 space-y-1">
-									<p className="text-sm font-medium leading-none">
-										{game.player1.id === session.user.id
-											? game.player2.username!
-											: game.player1.username!}
-									</p>
-									<p className="text-sm text-muted-foreground">
-										{formatDate(game.startAt!.toString())}
-									</p>
-								</div>
-								<Badge
-									variant={
-										game.result === "PLAYER1_WINS" &&
-										game.player1.id === session.user.id
-											? "default"
-											: game.result === "PLAYER2_WINS" &&
-												  game.player2.id === session.user.id
 												? "default"
-												: "secondary"
-									}
-									className="flex items-center space-x-1"
-								>
-									{(game.result === "PLAYER1_WINS" &&
-										game.player1.id === session.user.id) ||
-									(game.result === "PLAYER2_WINS" &&
-										game.player2.id === session.user.id) ? (
-										<>
-											<Trophy className="w-3 h-3" />
-											<span>Won</span>
-										</>
-									) : (
-										<>
-											<X className="w-3 h-3" />
-											<span>Lost</span>
-										</>
-									)}
-								</Badge>
-							</div>
-						))}
-					</ScrollArea>
+												: game.result === "PLAYER2_WINS" &&
+													  game.player2.id === session.user.id
+													? "default"
+													: "secondary"
+										}
+										className="flex items-center space-x-1"
+									>
+										{(game.result === "PLAYER1_WINS" &&
+											game.player1.id === session.user.id) ||
+										(game.result === "PLAYER2_WINS" &&
+											game.player2.id === session.user.id) ? (
+											<>
+												<Trophy className="w-3 h-3" />
+												<span>Won</span>
+											</>
+										) : (
+											<>
+												<X className="w-3 h-3" />
+												<span>Lost</span>
+											</>
+										)}
+									</Badge>
+								</div>
+							))}
+						</ScrollArea>
+					)}
+					{playedGames.length === 0 && (
+						<div className="flex justify-center items-center h-[300px] pr-4">
+							<p>No played games yet</p>
+						</div>
+					)}
 				</CardContent>
 			</Card>
 		</div>

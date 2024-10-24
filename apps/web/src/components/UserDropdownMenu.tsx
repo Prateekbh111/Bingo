@@ -1,5 +1,12 @@
 "use client";
-import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import {
+	ChevronsUpDown,
+	Handshake,
+	LogOut,
+	SquareUserRound,
+	TicketX,
+	User,
+} from "lucide-react";
 
 import {
 	DropdownMenu,
@@ -61,6 +68,23 @@ export function UserDropdownMenu({ session }: { session: Session }) {
 						</div>
 					</div>
 				</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<DropdownMenuGroup>
+					<DropdownMenuItem onClick={() => router.push("/contactUs")}>
+						<SquareUserRound className="mr-2 h-4 w-4" />
+						<span>Contact Us</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => router.push("/termsAndConditions")}>
+						<Handshake className="mr-2 h-4 w-4" />
+						<span>Terms And Conditions</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onClick={() => router.push("/refundAndCancellation")}
+					>
+						<TicketX className="mr-2 h-4 w-4" />
+						<span>Refund And Cancellation</span>
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem

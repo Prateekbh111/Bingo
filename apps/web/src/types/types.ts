@@ -33,6 +33,7 @@ enum GameStatus {
 }
 
 type Payload = {
+	number?: number;
 	playerNumber?: string;
 	otherPlayer?: Player;
 	board?: BingoCell[][];

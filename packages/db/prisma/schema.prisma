@@ -17,6 +17,7 @@ model User {
   role          String?
   accounts      Account[]
   sessions      Session[]
+  coins         Int?
   friends      Friends[]         
   receivedRequests FriendRequest[]
   player1Game  Game[]   @relation("player1Game")

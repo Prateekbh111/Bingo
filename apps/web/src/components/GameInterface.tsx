@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Session } from "next-auth";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Gamepad2, LoaderCircle, LoaderCircleIcon } from "lucide-react";
+import {
+	Check,
+	CircleDollarSign,
+	Gamepad2,
+	LoaderCircle,
+	LoaderCircleIcon,
+} from "lucide-react";
 import { ToastAction } from "./ui/toast";
 import {
 	ACCEPT_GAME_INVITE,
@@ -14,10 +19,10 @@ import {
 	checkBingoWin,
 	GAME_ENDED,
 	GAME_INVITE,
-	GAME_TIME,
 	GAME_TIME_MS,
 	GRID_FILLED,
 	INIT_GAME,
+	INIT_GAME_COINS,
 	MOVE,
 	RECONNECT,
 	SEND_GAME_INVITE,
@@ -26,6 +31,10 @@ import PlayerInfo from "./PlayerInfo";
 import GameEndModal from "./GameEndModal";
 import Friends from "./Friends";
 import { useSidebar } from "./ui/sidebar";
+import axios from "axios";
+import { ApiResponse } from "@/types/ApiResponse";
+import BingoCard from "./BingoCard";
+import FillRandomlyButton from "./FillRandomlyButton";
 
 export default function GameInterface({
 	friends,
@@ -38,23 +47,21 @@ export default function GameInterface({
 }) {
 	const { toast } = useToast();
 	const { open } = useSidebar();
-
 	const socketRef = useRef<WebSocket | null>(null);
-	const [disabled, setDisabled] = useState<boolean>(false);
-	const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+	const [userCoins, setUserCoins] = useState<number>(0);
+	const [normalGameDisable, setNormalGameDisable] = useState<boolean>(false);
+	const [coinsGameDisable, setCoinsGameDisable] = useState<boolean>(false);
 	const [turn, setTurn] = useState<string>("player1");
+	const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+	const [isGameEnded, setIsGameEnded] = useState<boolean>(false);
 	const [nextNumber, setNextNumber] = useState<number>(1);
 	const [lastNumber, setLastNumber] = useState<number | null>(null);
-
-	const [cellSize, setCellSize] = useState(56);
 	const [card, setCard] = useState<BingoCell[][]>([]);
 
 	const [gameResult, setGameResult] = useState<GameResult>({
 		result: "",
 		by: "",
 	});
-
-	const [isGameEnded, setIsGameEnded] = useState<boolean>(false);
 
 	const [userData, setUserData] = useState<PlayerData>({
 		isCardFilled: false,
@@ -87,7 +94,8 @@ export default function GameInterface({
 		setLastNumber(null);
 		setIsGameStarted(false);
 		setIsGameEnded(false);
-		setDisabled(false);
+		setNormalGameDisable(false);
+		setCoinsGameDisable(false);
 
 		setUserData((prevUserData) => ({
 			...prevUserData,
@@ -105,6 +113,7 @@ export default function GameInterface({
 			timeConsumed: 0,
 			gridFillTimeConsumed: 0,
 		}));
+		fetchCoins();
 	}, []);
 
 	async function handleSocketMessage(message: MessageEvent) {
@@ -123,57 +132,31 @@ export default function GameInterface({
 				}));
 				break;
 			case MOVE:
-				handleMove(messageJson.payload.number);
-				setUserData((prevUserData) => ({
-					...prevUserData,
-					timeConsumed:
-						prevUserData.playerNumber === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-				}));
-				setOpponentData((prevOpponentData) => ({
-					...prevOpponentData,
-					timeConsumed:
-						prevOpponentData.playerNumber === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-					linesCompleted: messageJson.payload.linesCompleted!,
-				}));
+				handleMove(messageJson.payload);
 				break;
 			case GAME_ENDED:
 				if (gameResult?.result != "") return;
 				const result = messageJson.payload.result;
 				const by = messageJson.payload.status;
 				setGameResult({ result, by });
-				setDisabled(true);
+				setNormalGameDisable(true);
 				setIsGameEnded(true);
+				fetchCoins();
 				break;
 			case RECONNECT:
 				handleReconnectGame(messageJson.payload);
 				break;
-			case GAME_TIME:
-				setUserData((prevUserData) => ({
-					...prevUserData,
-					timeConsumed:
-						messageJson.payload.playerNumber! === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-				}));
-				setOpponentData((prevOpponentData) => ({
-					...prevOpponentData,
-					timeConsumed:
-						messageJson.payload.playerNumber! === "player1"
-							? messageJson.payload.player1TimeConsumed!
-							: messageJson.payload.player2TimeConsumed!,
-					linesCompleted: messageJson.payload.opponentLinesCompleted!,
-				}));
-				break;
 		}
+	}
+
+	async function fetchCoins() {
+		const response = await axios.get<ApiResponse>("/api/balance");
+		setUserCoins(response.data.payload!);
 	}
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		socketRef.current = newSocket;
@@ -366,13 +349,28 @@ export default function GameInterface({
 		}));
 
 		setIsGameStarted(true);
-		setDisabled(false);
+		setNormalGameDisable(false);
 	}
 
-	function handleMove(number: number) {
-		markNumber(number);
-		setLastNumber(number);
+	function handleMove(payload: Payload) {
+		markNumber(payload.number!);
+		setLastNumber(payload.number!);
 		setTurn((prevTurn) => (prevTurn === "player1" ? "player2" : "player1"));
+		setUserData((prevUserData) => ({
+			...prevUserData,
+			timeConsumed:
+				prevUserData.playerNumber === "player1"
+					? payload.player1TimeConsumed!
+					: payload.player2TimeConsumed!,
+		}));
+		setOpponentData((prevOpponentData) => ({
+			...prevOpponentData,
+			timeConsumed:
+				prevOpponentData.playerNumber === "player1"
+					? payload.player1TimeConsumed!
+					: payload.player2TimeConsumed!,
+			linesCompleted: payload.linesCompleted!,
+		}));
 	}
 
 	function handleReconnectGame(payload: Payload) {
@@ -384,7 +382,7 @@ export default function GameInterface({
 		setTurn(payload.turn!);
 		setNextNumber(payload.board!.length === 0 ? 1 : 26);
 		setIsGameStarted(true);
-		setDisabled(false);
+		setNormalGameDisable(false);
 		setUserData((prevUserData) => ({
 			...prevUserData,
 			playerNumber: payload.playerNumber!,
@@ -447,27 +445,6 @@ export default function GameInterface({
 		});
 	}
 
-	function generateRandomBingoGrid(): BingoCell[][] {
-		const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
-
-		for (let i = numbers.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-		}
-
-		const grid: BingoCell[][] = [];
-		for (let i = 0; i < 5; i++) {
-			grid.push(
-				numbers.slice(i * 5, i * 5 + 5).map((number) => ({
-					number,
-					marked: false,
-				})),
-			);
-		}
-		setNextNumber(26);
-		return grid;
-	}
-
 	function markNumber(number: number) {
 		setCard((prevCard) =>
 			prevCard.map((row) =>
@@ -513,13 +490,17 @@ export default function GameInterface({
 	}
 
 	function handleRandomGameSelect() {
-		setDisabled(true);
+		setNormalGameDisable(true);
 		socketRef.current?.send(JSON.stringify({ type: INIT_GAME }));
 	}
 
-	function updateCellSize(containerWidth: number) {
-		const newSize = Math.floor((containerWidth - 30) / 5);
-		setCellSize(Math.max(newSize, 56));
+	function handleCoinsGameSelect() {
+		if (userCoins < 2) {
+			toast({ title: "Not sufficient Coins!!!" });
+			return;
+		}
+		setCoinsGameDisable(true);
+		socketRef.current?.send(JSON.stringify({ type: INIT_GAME_COINS }));
 	}
 
 	function handlePlayWithFriend(friendId: string) {
@@ -533,7 +514,7 @@ export default function GameInterface({
 			className={`bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full ${open && "md:flex-col lg:flex-row"}`}
 		>
 			<div
-				className={`md:pt-24 flex flex-col md:flex-row md:gap-10 justify-center items-center h-full w-full  `}
+				className={`md:pt-24 flex flex-col md:flex-row md:gap-4 lg:gap-10 justify-center items-center h-full w-full  `}
 			>
 				{isGameStarted && (
 					<PlayerInfo
@@ -542,59 +523,23 @@ export default function GameInterface({
 						isCurrentPlayer={true}
 					/>
 				)}
-				<div className="max-w-sm w-full flex flex-col items-center justify-center gap-4">
-					<Card
-						className={`w-full dark:bg-card bg-neutral-100 border-2 ${isGameStarted && "rounded-none md:rounded-md"}`}
-					>
-						<CardContent className="p-4">
-							<div
-								className="grid grid-cols-5 gap-1 md:gap-2"
-								ref={(el) => {
-									if (el) {
-										const resizeObserver = new ResizeObserver((entries) => {
-											for (const entry of entries) {
-												updateCellSize(entry.contentRect.width);
-											}
-										});
-										resizeObserver.observe(el);
-										return () => resizeObserver.disconnect();
-									}
-								}}
-							>
-								{card.map((row, rowIndex) =>
-									row.map((cell, cellIndex) => (
-										<Button
-											key={`${rowIndex}-${cellIndex}`}
-											onClick={() => handleCellClick(rowIndex, cellIndex)}
-											variant={cell.marked ? "default" : "outline"}
-											className={`p-0 font-bold text-lg ${
-												cell.marked && "bg-primary text-primary-foreground"
-											} ${lastNumber && cell.number === lastNumber && "ring-4 dark:ring-neutral-400 ring-neutral-600"}`}
-											style={{
-												width: `${cellSize}px`,
-												height: `${cellSize}px`,
-											}}
-											disabled={
-												disabled ||
-												!isGameStarted ||
-												(nextNumber > 25 && turn !== userData.playerNumber) ||
-												cell.marked
-											}
-										>
-											{cell.number}
-										</Button>
-									)),
-								)}
-							</div>
-						</CardContent>
-					</Card>
+				<div className="max-w-sm min-w-80 w-full flex flex-col items-center justify-center gap-4">
+					<BingoCard
+						card={card}
+						handleCellClick={handleCellClick}
+						isDisable={
+							normalGameDisable ||
+							!isGameStarted ||
+							(nextNumber > 25 && turn !== userData.playerNumber)
+						}
+						isGameStarted={isGameStarted}
+						lastNumber={lastNumber}
+					/>
 					{isGameStarted && !isGameEnded && !userData.isCardFilled && (
-						<Button
-							className="hidden md:block opacity-0 md:opacity-100"
-							onClick={() => setCard(generateRandomBingoGrid())}
-						>
-							Fill randomly
-						</Button>
+						<FillRandomlyButton
+							setCard={setCard}
+							setNextNumber={setNextNumber}
+						/>
 					)}
 					{isGameEnded && gameResult.result == "" && (
 						<Button
@@ -614,12 +559,11 @@ export default function GameInterface({
 				)}
 			</div>
 			{isGameStarted && !isGameEnded && !userData.isCardFilled && (
-				<Button
-					className="block md:hidden opacity-100 md:opacity-0"
-					onClick={() => setCard(generateRandomBingoGrid())}
-				>
-					Fill randomly
-				</Button>
+				<FillRandomlyButton
+					isMobile={true}
+					setCard={setCard}
+					setNextNumber={setNextNumber}
+				/>
 			)}
 			{isGameEnded && gameResult.result == "" && (
 				<Button
@@ -636,10 +580,10 @@ export default function GameInterface({
 							<Button
 								className="w-full py-8 text-lg"
 								onClick={handleRandomGameSelect}
-								disabled={disabled}
+								disabled={normalGameDisable || coinsGameDisable}
 								size="lg"
 							>
-								{!disabled ? (
+								{!normalGameDisable ? (
 									<span className="flex items-center gap-2">
 										Join Random Game <Gamepad2 className="h-5 w-5" />
 									</span>
@@ -650,10 +594,33 @@ export default function GameInterface({
 									</span>
 								)}
 							</Button>
+							{/* <div className="space-y-2">
+								<Button
+									className="w-full py-8 text-lg"
+									onClick={handleCoinsGameSelect}
+									disabled={normalGameDisable || coinsGameDisable}
+									size="lg"
+								>
+									{!coinsGameDisable ? (
+										<span className="flex items-center gap-2">
+											Play with coins <CircleDollarSign className="h-5 w-5" />
+										</span>
+									) : (
+										<span className="flex items-center gap-2">
+											Waiting for another open coin match{" "}
+											<LoaderCircle className="h-5 w-5 animate-spin" />
+										</span>
+									)}
+								</Button>
+								<div className="flex items-center text-muted-foreground text-sm m-0">
+									Current Balance: <CircleDollarSign className="ml-2 h-4 w-4" />
+									{userCoins}
+								</div>
+							</div> */}
 
 							<Friends
 								friends={friends}
-								disabled={disabled}
+								disabled={normalGameDisable || coinsGameDisable}
 								handlePlayWithFriend={handlePlayWithFriend}
 								session={session}
 							/>
@@ -664,14 +631,6 @@ export default function GameInterface({
 			<GameEndModal
 				isOpen={gameResult.result !== ""}
 				onClose={() => {
-					// setUserData((prevUserData) => ({
-					// 	...prevUserData,
-					// 	timeConsumed: 0,
-					// }));
-					// setOpponentData((prevOpponentData) => ({
-					// 	...prevOpponentData,
-					// 	timeConsumed: 0,
-					// }));
 					setGameResult({ result: "", by: "" });
 				}}
 				isWinner={

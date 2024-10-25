@@ -5,8 +5,8 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/SideBar";
+import axios from "axios";
+import { ApiResponse } from "@/types/ApiResponse";
 
 export default async function HomePage() {
 	const session = await getServerSession(authOptions);

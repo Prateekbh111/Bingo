@@ -20,6 +20,7 @@ export const authOptions: AuthOptions = {
 					id: profile.sub,
 					name: profile.name,
 					username: randomUsername,
+					coins: 100,
 					email: profile.email,
 					image: profile.picture,
 				};

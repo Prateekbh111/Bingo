@@ -1,4 +1,5 @@
 export const INIT_GAME = "init_game";
+export const INIT_GAME_COINS = "init_game_coins";
 export const MOVE = "move";
 export const GRID_FILLED = "grid_filled";
 export const RECONNECT = "reconnect";
@@ -10,6 +11,7 @@ export const GAME_ENDED = "game_ended";
 export const EXIT_GAME = "exit_game";
 export type Type =
 	| typeof INIT_GAME
+	| typeof INIT_GAME_COINS
 	| typeof MOVE
 	| typeof GRID_FILLED
 	| typeof RECONNECT

@@ -27,21 +27,19 @@ export default function ContactUs() {
 					</p>
 					<Separator />
 					<p className="w-full text-muted-foreground">
-						Registered Address: House No. 29, Gali No.1, near mitra eye
-						hospital, new patel nagar, Phagwara, Punjab, PIN: 144401
+						Registered Address: New patel nagar, Phagwara, Punjab, PIN: 144401
 					</p>
 					<Separator />
 					<p className="w-full text-muted-foreground">
-						Operational Address: House No. 29, Gali No.1, near mitra eye
-						hospital, new patel nagar, Phagwara, Punjab, PIN: 144401
+						Operational Address: New patel nagar, Phagwara, Punjab, PIN: 144401
 					</p>
 					<Separator />
 					<p className="w-full text-muted-foreground">
-						Telephone No: 8076501002
+						Telephone No: +91-8076501002
 					</p>
 					<Separator />
 					<p className="w-full text-muted-foreground">
-						E-Mail ID: prateekbh111@gmail.com
+						E-Mail ID: bingooo.site@gmail.com
 					</p>
 				</CardContent>
 			</Card>

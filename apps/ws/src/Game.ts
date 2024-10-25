@@ -20,6 +20,7 @@ interface User {
 }
 
 export class Game {
+	public coins: number;
 	public player1: User;
 	public player2: User;
 	public board1: BingoCell[][];
@@ -35,7 +36,8 @@ export class Game {
 	private lastMoveTime = new Date(Date.now());
 	private startTime = new Date(Date.now());
 
-	constructor(player1: User, player2: User) {
+	constructor(player1: User, player2: User, coins: number) {
+		this.coins = coins;
 		this.player1 = player1;
 		this.player2 = player2;
 		this.board1 = [];
@@ -70,7 +72,37 @@ export class Game {
 				},
 			}),
 		);
+		if (coins > 0) this.handleCoinGame();
 		this.addGameToDb();
+	}
+
+	async handleCoinGame() {
+		await prisma.$transaction(async (tx) => {
+			const user1 = await tx.user.update({
+				where: { id: this.player1.id },
+				data: {
+					coins: {
+						decrement: this.coins,
+					},
+				},
+			});
+			if (user1.coins! < 0)
+				throw new Error(
+					`${user1.name} doesn't have enough to send ${this.coins}`,
+				);
+			const user2 = await tx.user.update({
+				where: { id: this.player2.id },
+				data: {
+					coins: {
+						decrement: this.coins,
+					},
+				},
+			});
+			if (user2.coins! < 0)
+				throw new Error(
+					`${user2.name} doesn't have enough to send ${this.coins}`,
+				);
+		});
 	}
 
 	makeMove(user: User, move: number) {
@@ -166,15 +198,27 @@ export class Game {
 			}),
 		);
 		this.clearMoveTimer();
-		const updatedGame = await prisma.game.update({
-			data: {
-				status: "COMPLETED",
-				result: result,
-				endAt: new Date(Date.now()),
-			},
-			where: { id: this.gameId },
+		await prisma.$transaction(async (tx) => {
+			if (this.coins > 0) {
+				await tx.user.update({
+					where: {
+						id: result === "PLAYER1_WINS" ? this.player1.id : this.player2.id,
+					},
+					data: {
+						coins: { increment: this.coins * 2 },
+					},
+				});
+			}
+
+			await tx.game.update({
+				data: {
+					status: "COMPLETED",
+					result: result,
+					endAt: new Date(Date.now()),
+				},
+				where: { id: this.gameId },
+			});
 		});
-		console.log(updatedGame);
 	}
 
 	async resetMoveTimer() {

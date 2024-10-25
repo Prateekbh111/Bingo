@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Session } from "next-auth";
-import ThemeSwitch from "./ThemeSwitch";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
 import BingoLogo from "./BingoLogo";
@@ -44,7 +42,6 @@ export default async function Navbar({
 					)}
 
 					<div className="flex items-center gap-2 lg:gap-8 px-4">
-						<ThemeSwitch />
 						{!session && (
 							<Link href={"/login"}>
 								<Button className="px-8 text-base rounded-md">Login</Button>

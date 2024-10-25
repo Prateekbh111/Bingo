@@ -10,6 +10,7 @@ import {
 	Type,
 	BingoCell,
 	GAME_RESULT,
+	INIT_GAME_COINS,
 } from "./types";
 import { Game } from "./Game";
 
@@ -88,7 +89,34 @@ export class BingoManager {
 					) {
 						//if user has leaved the game end the game
 						//TODO: later implement resigning error
-						const game = new Game(this.pendingUser, user);
+						const game = new Game(this.pendingUser, user, 0);
+						this.games.push(game);
+						this.pendingUser = null;
+					} else {
+						console.log("found a user which is offline now");
+						this.users = this.users.filter(
+							(user) => user.id != this.pendingUser?.id,
+						);
+						this.pendingUser = user;
+					}
+				} else {
+					this.pendingUser = user;
+				}
+			}
+
+			if (message.type == INIT_GAME_COINS) {
+				this.checkExistingGame(user);
+				//if no game exists connect to new game
+				//if there is a pending user to connect then add current user to it
+				//otherwise make current user to pending user
+				if (this.pendingUser && this.pendingUser.id !== user.id) {
+					if (
+						this.pendingUser.socket.readyState !== WebSocket.CLOSED &&
+						this.pendingUser.socket.readyState !== WebSocket.CLOSING
+					) {
+						//if user has leaved the game end the game
+						//TODO: later implement resigning error
+						const game = new Game(this.pendingUser, user, 2);
 						this.games.push(game);
 						this.pendingUser = null;
 					} else {
@@ -158,7 +186,7 @@ export class BingoManager {
 					socket: otherPlayerSocket,
 				};
 
-				const game = new Game(user, opponent);
+				const game = new Game(user, opponent, 0);
 				this.games.push(game);
 			}
 

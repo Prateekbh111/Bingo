@@ -38,12 +38,15 @@ export default async function Profile() {
 			startAt: true,
 			endAt: true,
 		},
+		orderBy: {
+			endAt: "desc",
+		},
 	});
 
 	return (
 		<AuthProvider session={session}>
 			<Navbar session={session!} withSideBar floating={false} />
-			<div className="min-h-screen flex flex-col md:flex-row items-center justify-center">
+			<div className="min-h-screen flex flex-col lg:flex-row items-center justify-center">
 				<ProfileUpdateCard session={session} />
 				<RecentlyPlayedGames session={session} playedGames={playedGames} />
 			</div>

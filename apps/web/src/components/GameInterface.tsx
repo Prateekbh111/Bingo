@@ -156,7 +156,7 @@ export default function GameInterface({
 
 	useEffect(() => {
 		const newSocket = new WebSocket(
-			`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		socketRef.current = newSocket;

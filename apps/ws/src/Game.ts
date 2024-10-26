@@ -72,7 +72,9 @@ export class Game {
 				},
 			}),
 		);
-		if (coins > 0) this.handleCoinGame();
+		if (coins > 0) {
+			this.handleCoinGame();
+		}
 		this.addGameToDb();
 	}
 
@@ -198,26 +200,24 @@ export class Game {
 			}),
 		);
 		this.clearMoveTimer();
-		await prisma.$transaction(async (tx) => {
-			if (this.coins > 0) {
-				await tx.user.update({
-					where: {
-						id: result === "PLAYER1_WINS" ? this.player1.id : this.player2.id,
-					},
-					data: {
-						coins: { increment: this.coins * 2 },
-					},
-				});
-			}
-
-			await tx.game.update({
-				data: {
-					status: "COMPLETED",
-					result: result,
-					endAt: new Date(Date.now()),
+		if (this.coins > 0) {
+			await prisma.user.update({
+				where: {
+					id: result === "PLAYER1_WINS" ? this.player1.id : this.player2.id,
 				},
-				where: { id: this.gameId },
+				data: {
+					coins: { increment: this.coins * 2 },
+				},
 			});
+		}
+
+		await prisma.game.update({
+			data: {
+				status: "COMPLETED",
+				result: result,
+				endAt: new Date(Date.now()),
+			},
+			where: { id: this.gameId },
 		});
 	}
 
@@ -337,7 +337,6 @@ export class Game {
 			},
 		});
 		this.gameId = game.id;
-		console.log(game);
 	}
 
 	getPlayer1TimeConsumed() {

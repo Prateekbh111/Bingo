@@ -78,6 +78,13 @@ export class BingoManager {
 			console.log(message.type);
 
 			if (message.type == INIT_GAME) {
+				this.users.map((user) => {
+					console.log(user.name);
+				});
+				this.users = this.users.filter(
+					(user) => user.socket.readyState === WebSocket.OPEN,
+				);
+
 				this.checkExistingGame(user);
 				//if no game exists connect to new game
 				//if there is a pending user to connect then add current user to it

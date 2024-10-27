@@ -330,7 +330,7 @@ export class Game {
 				},
 				player2: {
 					connect: {
-						id: this.player2.id ?? " ",
+						id: this.player2.id,
 					},
 				},
 				status: "IN_PROGRESS",

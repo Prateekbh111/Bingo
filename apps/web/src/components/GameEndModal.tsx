@@ -25,6 +25,14 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
 	by,
 	onPlayAgain,
 }) => {
+	let byString;
+	if (by === "TIME_UP") {
+		byString = "timeout";
+	} else if (by === "BINGO") {
+		byString = "Bingo";
+	} else if (by === "PLAYER_EXIT") {
+		byString = "Player Exit";
+	}
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="sm:max-w-[425px]">
@@ -49,7 +57,7 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
 					</DialogDescription>
 
 					<p className="text-center tracking-tighter opacity-70">
-						by {by === "TIME_UP" ? "timeout" : "bingo"}
+						by {byString}
 					</p>
 				</DialogHeader>
 				<DialogFooter className="flex justify-center gap-3 ">

@@ -32,6 +32,12 @@ enum GameStatus {
 	PLAYER_EXIT,
 }
 
+enum ButtonType {
+	FILLRANDOM,
+	PLAYAGAIN,
+	EXIT,
+}
+
 type Payload = {
 	number?: number;
 	playerNumber?: string;

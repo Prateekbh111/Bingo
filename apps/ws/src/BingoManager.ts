@@ -11,6 +11,8 @@ import {
 	BingoCell,
 	GAME_RESULT,
 	INIT_GAME_COINS,
+	GAME_STATUS,
+	CANCEL_INIT_GAME,
 } from "./types";
 import { Game } from "./Game";
 
@@ -30,17 +32,20 @@ interface Message {
 		board: BingoCell[][];
 		number: number;
 		result: GAME_RESULT;
+		by: GAME_STATUS;
 	};
 }
 
 export class BingoManager {
 	private games: Game[];
-	private pendingUser: User | null; // pending user waiting to be connected
+	private pendingUser: User | null; // pending user waiting to be connected in normal game
+	private pendingUserCoins: User | null; //pending user waiting to be connnected in coins game
 	private users: User[]; //active users
 
 	constructor() {
 		this.games = [];
 		this.pendingUser = null;
+		this.pendingUserCoins = null;
 		this.users = [];
 	}
 
@@ -116,26 +121,38 @@ export class BingoManager {
 				//if no game exists connect to new game
 				//if there is a pending user to connect then add current user to it
 				//otherwise make current user to pending user
-				if (this.pendingUser && this.pendingUser.id !== user.id) {
+				if (this.pendingUserCoins && this.pendingUserCoins.id !== user.id) {
 					if (
-						this.pendingUser.socket.readyState !== WebSocket.CLOSED &&
-						this.pendingUser.socket.readyState !== WebSocket.CLOSING
+						this.pendingUserCoins.socket.readyState !== WebSocket.CLOSED &&
+						this.pendingUserCoins.socket.readyState !== WebSocket.CLOSING
 					) {
 						//if user has leaved the game end the game
 						//TODO: later implement resigning error
-						const game = new Game(this.pendingUser, user, 2);
+						//TTODO: check if user has sufficient coins or not
+						const game = new Game(this.pendingUserCoins, user, 2);
 						this.games.push(game);
-						this.pendingUser = null;
+						this.pendingUserCoins = null;
 					} else {
 						console.log("found a user which is offline now");
 						this.users = this.users.filter(
-							(user) => user.id != this.pendingUser?.id,
+							(user) => user.id != this.pendingUserCoins?.id,
 						);
-						this.pendingUser = user;
+						this.pendingUserCoins = user;
 					}
 				} else {
-					this.pendingUser = user;
+					this.pendingUserCoins = user;
 				}
+			}
+
+			if (message.type === CANCEL_INIT_GAME) {
+				if (this.pendingUser && this.pendingUser.id === user.id) {
+					this.pendingUser = null;
+				}
+				if (this.pendingUserCoins && this.pendingUserCoins.id === user.id) {
+					this.pendingUserCoins = null;
+				}
+				console.log("game length: ", this.games.length);
+				console.log("pendingUser:", this.pendingUser);
 			}
 
 			if (message.type == SEND_GAME_INVITE) {
@@ -258,8 +275,8 @@ export class BingoManager {
 				}
 
 				const result = message.payload.result;
-				game?.endGame("TIME_UP", result);
-				console.log(game.isGameOver);
+				const by = message.payload.by;
+				game?.endGame(by, result);
 				if (game && game!.isGameOver) {
 					this.games = this.games.filter((g) => !g.isGameOver);
 					return;

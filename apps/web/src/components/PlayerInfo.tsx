@@ -38,7 +38,7 @@ export default function PlayerInfo({
 
 	return (
 		<div
-			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border-2 bg-card ${isCurrentPlayer ? "rounded-t-md border-b-0 md:border-b-2" : "rounded-b-md border-t-0 md:border-t-2"} md:rounded-md  ${isTurn && isCurrentPlayer && "border-2 border-t-primary "} ${isTurn && !isCurrentPlayer && " border-2 border-b-primary md:border-t-primary md:border-b-card"}`}
+			className={` flex md:flex-col items-center justify-center w-full max-w-sm md:max-w-xs  gap-2 p-4 border-2 bg-card ${isCurrentPlayer ? "rounded-b-md border-t-0 md:border-t-2" : "rounded-t-md border-b-0 md:border-b-2"} md:rounded-md  ${isTurn && isCurrentPlayer && " border-2 border-b-primary md:border-t-primary md:border-b-card"} ${isTurn && !isCurrentPlayer && "border-2 border-t-primary"}`}
 		>
 			<Avatar className="h-10 w-10">
 				<AvatarImage

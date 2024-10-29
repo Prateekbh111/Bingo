@@ -6,6 +6,7 @@ export const CARDFILL_TIME_MS = 0.5 * 60 * 1000;
 
 export const INIT_GAME = "init_game";
 export const INIT_GAME_COINS = "init_game_coins";
+export const CANCEL_INIT_GAME = "cancel_init_game";
 export const MOVE = "move";
 export const GRID_FILLED = "grid_filled";
 export const RECONNECT = "reconnect";
@@ -14,6 +15,9 @@ export const GAME_INVITE = "game_invite";
 export const SEND_GAME_INVITE = "send_game_invite";
 export const ACCEPT_GAME_INVITE = "accept_game_invite";
 export const GAME_ENDED = "game_ended";
+export const FILLRANDOM = "fill_random";
+export const PLAYAGAIN = "play_again";
+export const EXIT = "exit";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

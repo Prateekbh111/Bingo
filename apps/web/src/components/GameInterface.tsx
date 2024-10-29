@@ -15,8 +15,11 @@ import {
 import { ToastAction } from "./ui/toast";
 import {
 	ACCEPT_GAME_INVITE,
+	CANCEL_INIT_GAME,
 	CARDFILL_TIME_MS,
 	checkBingoWin,
+	EXIT,
+	FILLRANDOM,
 	GAME_ENDED,
 	GAME_INVITE,
 	GAME_TIME_MS,
@@ -24,6 +27,7 @@ import {
 	INIT_GAME,
 	INIT_GAME_COINS,
 	MOVE,
+	PLAYAGAIN,
 	RECONNECT,
 	SEND_GAME_INVITE,
 } from "@/lib/utils";
@@ -34,7 +38,16 @@ import { useSidebar } from "./ui/sidebar";
 import axios from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import BingoCard from "./BingoCard";
-import FillRandomlyButton from "./FillRandomlyButton";
+import DynamicButton from "./DynamicButton";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "./ui/dialog";
 
 export default function GameInterface({
 	friends,
@@ -46,7 +59,7 @@ export default function GameInterface({
 	sessionToken: string | undefined;
 }) {
 	const { toast } = useToast();
-	const { open } = useSidebar();
+	const { open, isMobile } = useSidebar();
 	const socketRef = useRef<WebSocket | null>(null);
 	const [userCoins, setUserCoins] = useState<number>(0);
 	const [normalGameDisable, setNormalGameDisable] = useState<boolean>(false);
@@ -58,6 +71,9 @@ export default function GameInterface({
 	const [lastNumber, setLastNumber] = useState<number | null>(null);
 	const [card, setCard] = useState<BingoCell[][]>([]);
 
+	const [isSearchingGame, setIsSearchingGame] = useState<boolean>(false);
+	const [isSearchingCoinGame, setIsSearchingCoinGame] =
+		useState<boolean>(false);
 	const [gameResult, setGameResult] = useState<GameResult>({
 		result: "",
 		by: "",
@@ -96,6 +112,8 @@ export default function GameInterface({
 		setIsGameEnded(false);
 		setNormalGameDisable(false);
 		setCoinsGameDisable(false);
+		setIsSearchingGame(false);
+		setIsSearchingCoinGame(false);
 
 		setUserData((prevUserData) => ({
 			...prevUserData,
@@ -309,6 +327,7 @@ export default function GameInterface({
 						userData.playerNumber === "player1"
 							? "PLAYER2_WINS"
 							: "PLAYER1_WINS",
+					by: "TIME_UP",
 				},
 			}),
 		);
@@ -332,6 +351,7 @@ export default function GameInterface({
 						opponentData.playerNumber === "player1"
 							? "PLAYER2_WINS"
 							: "PLAYER1_WINS",
+					by: "TIME_UP",
 				},
 			}),
 		);
@@ -491,6 +511,7 @@ export default function GameInterface({
 
 	function handleRandomGameSelect() {
 		setNormalGameDisable(true);
+		setIsSearchingGame(true);
 		socketRef.current?.send(JSON.stringify({ type: INIT_GAME }));
 	}
 
@@ -499,6 +520,7 @@ export default function GameInterface({
 			toast({ title: "Not sufficient Coins!!!" });
 			return;
 		}
+		setIsSearchingCoinGame(true);
 		setCoinsGameDisable(true);
 		socketRef.current?.send(JSON.stringify({ type: INIT_GAME_COINS }));
 	}
@@ -509,14 +531,65 @@ export default function GameInterface({
 		);
 	}
 
+	function handleGameExit() {
+		socketRef.current?.send(
+			JSON.stringify({
+				type: GAME_ENDED,
+				payload: {
+					result:
+						opponentData.playerNumber === "player1"
+							? "PLAYER1_WINS"
+							: "PLAYER2_WINS",
+					by: "PLAYER_EXIT",
+				},
+			}),
+		);
+	}
+
+	function generateRandomBingoGrid(): BingoCell[][] {
+		const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
+
+		for (let i = numbers.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+		}
+
+		const grid: BingoCell[][] = [];
+		for (let i = 0; i < 5; i++) {
+			grid.push(
+				numbers.slice(i * 5, i * 5 + 5).map((number) => ({
+					number,
+					marked: false,
+				})),
+			);
+		}
+		setNextNumber(26);
+		return grid;
+	}
+
+	function cancelGameSearch() {
+		setIsSearchingGame(false);
+		setIsSearchingCoinGame(false);
+		setNormalGameDisable(false);
+		setCoinsGameDisable(false);
+		socketRef.current?.send(JSON.stringify({ type: CANCEL_INIT_GAME }));
+	}
+
 	return (
 		<div
 			className={`bg-background flex flex-col md:flex-row justify-center items-center min-h-screen p-4 gap-4 w-full ${open && "md:flex-col lg:flex-row"}`}
 		>
 			<div
-				className={`md:pt-24 flex flex-col md:flex-row md:gap-4 lg:gap-10 justify-center items-center h-full w-full  `}
+				className={`pt-24 flex flex-col md:flex-row md:gap-4 lg:gap-10 justify-center items-center h-full w-full  `}
 			>
-				{isGameStarted && (
+				{isGameStarted && isMobile && (
+					<PlayerInfo
+						playerData={opponentData}
+						isCurrentPlayer={false}
+						isTurn={turn === opponentData.playerNumber}
+					/>
+				)}
+				{isGameStarted && !isMobile && (
 					<PlayerInfo
 						playerData={userData}
 						isTurn={turn === userData.playerNumber}
@@ -535,22 +608,34 @@ export default function GameInterface({
 						isGameStarted={isGameStarted}
 						lastNumber={lastNumber}
 					/>
-					{isGameStarted && !isGameEnded && !userData.isCardFilled && (
-						<FillRandomlyButton
-							setCard={setCard}
-							setNextNumber={setNextNumber}
-						/>
+
+					{isGameStarted && !isGameEnded && !isMobile && (
+						<div className="flex justify-around items-center max-w-sm w-full">
+							{!userData.isCardFilled && (
+								<DynamicButton
+									onClick={() => setCard(generateRandomBingoGrid())}
+									buttonType={FILLRANDOM}
+								/>
+							)}
+
+							<DynamicButton
+								buttonType={EXIT}
+								onClick={() => handleGameExit()}
+							/>
+						</div>
 					)}
 					{isGameEnded && gameResult.result == "" && (
-						<Button
-							className="hidden md:block opacity-0 md:opacity-100"
-							onClick={() => resetGame()}
-						>
-							Play Again
-						</Button>
+						<DynamicButton onClick={() => resetGame()} buttonType={PLAYAGAIN} />
 					)}
 				</div>
-				{isGameStarted && (
+				{isGameStarted && isMobile && (
+					<PlayerInfo
+						playerData={userData}
+						isTurn={turn === userData.playerNumber}
+						isCurrentPlayer={true}
+					/>
+				)}
+				{isGameStarted && !isMobile && (
 					<PlayerInfo
 						playerData={opponentData}
 						isCurrentPlayer={false}
@@ -558,42 +643,124 @@ export default function GameInterface({
 					/>
 				)}
 			</div>
-			{isGameStarted && !isGameEnded && !userData.isCardFilled && (
-				<FillRandomlyButton
-					isMobile={true}
-					setCard={setCard}
-					setNextNumber={setNextNumber}
-				/>
+			{isGameStarted && !isGameEnded && isMobile && (
+				<div className="flex justify-around items-center w-full max-w-sm">
+					{!userData.isCardFilled && (
+						<DynamicButton
+							isMobile={true}
+							onClick={() => setCard(generateRandomBingoGrid())}
+							buttonType={FILLRANDOM}
+						/>
+					)}
+
+					<DynamicButton
+						isMobile={true}
+						buttonType={EXIT}
+						onClick={() => handleGameExit()}
+					/>
+				</div>
 			)}
 			{isGameEnded && gameResult.result == "" && (
-				<Button
-					className="block md:hidden opacity-100 md:opacity-0"
+				<DynamicButton
+					isMobile={true}
 					onClick={() => resetGame()}
-				>
-					Play Again
-				</Button>
+					buttonType={PLAYAGAIN}
+				/>
 			)}
 			{!isGameStarted && (
 				<div className="md:pt-24 flex justify-center items-center h-full w-full">
 					<div className="max-w-sm w-full">
 						<div className="space-y-8">
-							<Button
-								className="w-full py-8 text-lg"
-								onClick={handleRandomGameSelect}
-								disabled={normalGameDisable || coinsGameDisable}
-								size="lg"
-							>
-								{!normalGameDisable ? (
-									<span className="flex items-center gap-2">
-										Join Random Game <Gamepad2 className="h-5 w-5" />
-									</span>
-								) : (
+							<Dialog open={isSearchingGame}>
+								<DialogTrigger className="w-full">
+									<Button
+										className="w-full py-8 text-lg"
+										onClick={handleRandomGameSelect}
+										disabled={normalGameDisable || coinsGameDisable}
+										size="lg"
+									>
+										{!normalGameDisable ? (
+											<span className="flex items-center gap-2">
+												Join Random Game <Gamepad2 className="h-5 w-5" />
+											</span>
+										) : (
+											<span className="flex items-center gap-2">
+												Waiting for another player{" "}
+												<LoaderCircle className="h-5 w-5 animate-spin" />
+											</span>
+										)}
+									</Button>
+								</DialogTrigger>
+								<DialogContent className="max-w-sm">
+									<DialogHeader>
+										<DialogTitle>Searching Game</DialogTitle>
+									</DialogHeader>
 									<span className="flex items-center gap-2">
 										Waiting for another player{" "}
 										<LoaderCircle className="h-5 w-5 animate-spin" />
 									</span>
-								)}
-							</Button>
+									<DialogFooter className="justify-end md:w-full">
+										<DialogClose asChild>
+											<Button
+												size={"sm"}
+												type="button"
+												variant={"destructive"}
+												onClick={cancelGameSearch}
+											>
+												Cancel
+											</Button>
+										</DialogClose>
+									</DialogFooter>
+								</DialogContent>
+							</Dialog>
+
+							<div className="space-y-2">
+								<Dialog open={isSearchingCoinGame}>
+									<DialogTrigger className="w-full">
+										<Button
+											className="w-full py-8 text-lg"
+											onClick={handleCoinsGameSelect}
+											disabled={normalGameDisable || coinsGameDisable}
+											size="lg"
+										>
+											{!coinsGameDisable ? (
+												<span className="flex items-center gap-2">
+													Play with coins{" "}
+													<CircleDollarSign className="h-5 w-5" />
+												</span>
+											) : (
+												<span className="flex items-center gap-2">
+													Waiting for another open coin match{" "}
+													<LoaderCircle className="h-5 w-5 animate-spin" />
+												</span>
+											)}
+										</Button>
+									</DialogTrigger>
+									<DialogContent className="sm:max-w-[425px]">
+										<DialogHeader>
+											<DialogTitle>Searching Game</DialogTitle>
+										</DialogHeader>
+										<span className="flex items-center gap-2">
+											Waiting for another open coin match{" "}
+											<LoaderCircle className="h-5 w-5 animate-spin" />
+										</span>
+										<DialogFooter>
+											<Button
+												type="submit"
+												variant={"destructive"}
+												onClick={cancelGameSearch}
+											>
+												Cancel
+											</Button>
+										</DialogFooter>
+									</DialogContent>
+								</Dialog>
+								<div className="flex items-center text-muted-foreground text-sm m-0">
+									Current Balance: <CircleDollarSign className="ml-2 h-4 w-4" />
+									{userCoins}
+								</div>
+							</div>
+
 							{/* <div className="space-y-2">
 								<Button
 									className="w-full py-8 text-lg"
@@ -612,10 +779,6 @@ export default function GameInterface({
 										</span>
 									)}
 								</Button>
-								<div className="flex items-center text-muted-foreground text-sm m-0">
-									Current Balance: <CircleDollarSign className="ml-2 h-4 w-4" />
-									{userCoins}
-								</div>
 							</div> */}
 
 							<Friends
@@ -642,7 +805,7 @@ export default function GameInterface({
 							? true
 							: false
 				}
-				by={gameResult.by || ""}
+				by={gameResult.by}
 				onPlayAgain={() => {
 					setGameResult({ result: "", by: "" });
 					resetGame();

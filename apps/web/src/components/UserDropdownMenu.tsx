@@ -55,7 +55,7 @@ export function UserDropdownMenu({ session }: { session: Session }) {
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
-				className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+				className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg bg-background"
 				side="bottom"
 				align="end"
 				sideOffset={4}
@@ -76,23 +76,6 @@ export function UserDropdownMenu({ session }: { session: Session }) {
 						</div>
 					</div>
 				</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem onClick={() => router.push("/contactUs")}>
-						<SquareUserRound className="mr-2 h-4 w-4" />
-						<span>Contact Us</span>
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => router.push("/termsAndConditions")}>
-						<Handshake className="mr-2 h-4 w-4" />
-						<span>Terms And Conditions</span>
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() => router.push("/refundAndCancellation")}
-					>
-						<TicketX className="mr-2 h-4 w-4" />
-						<span>Refund And Cancellation</span>
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem

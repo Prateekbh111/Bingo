@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
 	Check,
-	CircleDollarSign,
 	Gamepad2,
 	LoaderCircle,
 	LoaderCircleIcon,
+	Trophy,
 } from "lucide-react";
 import { ToastAction } from "./ui/toast";
 import {
@@ -517,7 +517,7 @@ export default function GameInterface({
 
 	function handleCoinsGameSelect() {
 		if (userCoins < 2) {
-			toast({ title: "Not sufficient Coins!!!" });
+			toast({ title: "Not sufficient Trophies!!!" });
 			return;
 		}
 		setIsSearchingCoinGame(true);
@@ -725,8 +725,7 @@ export default function GameInterface({
 										>
 											{!coinsGameDisable ? (
 												<span className="flex items-center gap-2">
-													Play with coins{" "}
-													<CircleDollarSign className="h-5 w-5" />
+													Play with Trophies <Trophy className="h-5 w-5" />
 												</span>
 											) : (
 												<span className="flex items-center gap-2">
@@ -756,7 +755,7 @@ export default function GameInterface({
 									</DialogContent>
 								</Dialog>
 								<div className="flex items-center text-muted-foreground text-sm m-0">
-									Current Balance: <CircleDollarSign className="ml-2 h-4 w-4" />
+									Current Trophies: <Trophy className="ml-2 h-4 w-4" />
 									{userCoins}
 								</div>
 							</div>

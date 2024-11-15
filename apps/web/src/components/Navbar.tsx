@@ -22,10 +22,10 @@ export default async function Navbar({
 				className={`z-50 flex items-center gap-2  rounded-2xl  ${floating && "border mx-2 md:mx-auto md:max-w-6xl md:shadow-lg"}`}
 			>
 				<div
-					className={`flex w-full justify-between mx-auto backdrop-blur-3xl p-4 border-none${floating && "border-b border-primary/10 p-6 rounded-2xl"}`}
+					className={`flex w-full justify-between mx-auto backdrop-blur-3xl p-4 border-none${floating && "border-b border-primary/10 p-5 rounded-2xl"}`}
 				>
 					{withSideBar && (
-						<div className="flex h-16 shrink-0 items-center gap-2 px-4">
+						<div className="flex h-16 shrink-0 items-center gap-2 pl-4">
 							<SidebarTrigger />
 							<Separator orientation="vertical" className="mr-2 h-4" />
 							<BingoLogo />
@@ -41,7 +41,7 @@ export default async function Navbar({
 						</Link>
 					)}
 
-					<div className="flex items-center gap-2 lg:gap-8 px-4">
+					<div className="flex items-center gap-2 lg:gap-8">
 						{!session && (
 							<Link href={"/login"}>
 								<Button className="px-8 text-base rounded-md">Login</Button>

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 	description: "Bingooo.site - The best multiplayer Bingo game online!",
 	viewport: "width=device-width, initial-scale=1",
 	icons: {
-		icon: "/favicon.ico",
+		icon: "/icon.svg",
 	},
 };
 
@@ -31,6 +31,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" className="" suppressHydrationWarning>
+			{/* <head>
+				<link rel="icon" href="/icon.svg" />
+			</head> */}
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>

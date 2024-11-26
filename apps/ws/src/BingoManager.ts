@@ -13,6 +13,8 @@ import {
 	INIT_GAME_COINS,
 	GAME_STATUS,
 	CANCEL_INIT_GAME,
+	RECONNECT,
+	PENDING_GAME,
 } from "./types";
 import { Game } from "./Game";
 
@@ -71,8 +73,20 @@ export class BingoManager {
 		}
 
 		//if game exists but not over then reconnect
-		if (existingGame && !existingGame.isGameOver) {
-			existingGame.reconnect(user);
+		if (
+			existingGame &&
+			!existingGame.isGameOver &&
+			existingGame.player1 &&
+			existingGame.player2
+		) {
+			user.socket.send(
+				JSON.stringify({
+					type: PENDING_GAME,
+					payload: {
+						isCoinsGame: true,
+					},
+				}),
+			);
 			return;
 		}
 	}
@@ -101,6 +115,26 @@ export class BingoManager {
 					) {
 						//if user has leaved the game end the game
 						//TODO: later implement resigning error
+
+						const existingUserGame = this.games.find(
+							(game) =>
+								game.player1.id === user.id || game.player2.id === user.id,
+						);
+						const existingPendingUserGame = this.games.find(
+							(game) =>
+								game.player1.id === this.pendingUser?.id ||
+								game.player2.id === this.pendingUser?.id,
+						);
+
+						console.log(this.games.length);
+						this.games = this.games.filter(
+							(g) =>
+								g.gameId != existingPendingUserGame?.gameId ||
+								g.gameId != existingUserGame?.gameId,
+						);
+						console.log("deleteing game");
+						console.log(this.games.length);
+
 						const game = new Game(this.pendingUser, user, 0);
 						this.games.push(game);
 						this.pendingUser = null;
@@ -153,6 +187,23 @@ export class BingoManager {
 				}
 				console.log("game length: ", this.games.length);
 				console.log("pendingUser:", this.pendingUser);
+			}
+
+			if (message.type === RECONNECT) {
+				const existingGame = this.games.find(
+					(game) => game.player1.id === user.id || game.player2.id === user.id,
+				);
+
+				//if game exists but over then remove that game
+				if (existingGame && existingGame.isGameOver) {
+					this.games = this.games.filter((g) => !g.isGameOver);
+				}
+
+				//if game exists but not over then reconnect
+				if (existingGame && !existingGame.isGameOver) {
+					existingGame.reconnect(user);
+					return;
+				}
 			}
 
 			if (message.type == SEND_GAME_INVITE) {

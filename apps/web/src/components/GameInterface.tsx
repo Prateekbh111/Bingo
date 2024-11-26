@@ -27,6 +27,7 @@ import {
 	INIT_GAME,
 	INIT_GAME_COINS,
 	MOVE,
+	PENDING_GAME,
 	PLAYAGAIN,
 	RECONNECT,
 	SEND_GAME_INVITE,
@@ -163,6 +164,9 @@ export default function GameInterface({
 				break;
 			case RECONNECT:
 				handleReconnectGame(messageJson.payload);
+				break;
+			case PENDING_GAME:
+				handlePendingGame(messageJson.payload);
 				break;
 		}
 	}
@@ -463,6 +467,43 @@ export default function GameInterface({
 			),
 			duration: 5000,
 		});
+	}
+
+	function handlePendingGame(payload: Payload) {
+		toast({
+			description: (
+				<div className="flex items-center space-x-4 mb-4">
+					<div className="grid gap-1">
+						<p className="font-medium">
+							Bingo {payload.isCoinsGame ? "Coin " : ""}Game Pending
+						</p>
+						<p className="text-sm text-muted-foreground">
+							Want to join your pending Bingo game
+						</p>
+					</div>
+				</div>
+			),
+			action: (
+				<ToastAction
+					altText="Accept Reconnect"
+					onClick={() => {
+						cancelGameSearch();
+						socketRef.current!.send(
+							JSON.stringify({
+								type: RECONNECT,
+							}),
+						);
+					}}
+				>
+					<Check className="w-4 h-4 mr-1" />
+					Accept
+				</ToastAction>
+			),
+			duration: 5000,
+		});
+
+		//TODO: if not accepting the game after 5sec we going to delete that game if it is present
+		// current user to as a loser.
 	}
 
 	function markNumber(number: number) {

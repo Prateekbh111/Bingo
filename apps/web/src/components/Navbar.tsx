@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
 import { Session } from "next-auth";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
 import BingoLogo from "./BingoLogo";
+import LoginButton from "./LoginButton";
 
 export default async function Navbar({
 	session,
@@ -42,11 +42,7 @@ export default async function Navbar({
 					)}
 
 					<div className="flex items-center gap-2 lg:gap-8">
-						{!session && (
-							<Link href={"/login"}>
-								<Button className="px-8 text-base rounded-md">Login</Button>
-							</Link>
-						)}
+						{!session && <LoginButton />}
 					</div>
 				</div>
 			</nav>

@@ -1,9 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Session } from "next-auth";
-import Link from "next/link";
 import { Check, Trophy, Info } from "lucide-react";
 import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
 
 export default function HowToPlay({ session }: { session: Session }) {
 	const steps = [
@@ -89,13 +89,11 @@ export default function HowToPlay({ session }: { session: Session }) {
 						environment
 					</p>
 					<Button
-						asChild
 						size="lg"
 						className="bg-primary px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+						onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
 					>
-						<Link href={`${session ? "/dashboard" : "/login"}`}>
-							Start Playing Now
-						</Link>
+						Start Playing Now
 					</Button>
 				</section>
 			</motion.div>

@@ -1,10 +1,10 @@
 "use client";
-import Link from "next/link";
 import { Spotlight } from "./ui/spotlight";
 import { Button } from "./ui/button";
 import { Trophy, Users, Star, Gamepad2 } from "lucide-react";
 import { Session } from "next-auth";
 import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
 
 export default function HeroSection({ session }: { session: Session }) {
 	const features = [
@@ -84,12 +84,13 @@ export default function HeroSection({ session }: { session: Session }) {
 						transition={{ duration: 0.6, delay: 1 }}
 						className="flex flex-col items-center gap-4"
 					>
-						<Link href={`${session ? "/dashboard" : "/login"}`}>
-							<Button className="group relative px-20 py-8 flex items-center justify-center gap-2 rounded-md  shadow-lg transition-all duration-300 hover:shadow-xl">
-								<span className="font-bold text-xl">Play</span>
-								<Gamepad2 className="group-hover:rotate-12 transition-transform" />
-							</Button>
-						</Link>
+						<Button
+							className="group relative px-20 py-8 flex items-center justify-center gap-2 rounded-md  shadow-lg transition-all duration-300 hover:shadow-xl"
+							onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+						>
+							<span className="font-bold text-xl">Play</span>
+							<Gamepad2 className="group-hover:rotate-12 transition-transform" />
+						</Button>
 						<p className="text-sm text-gray-500 dark:text-gray-400">
 							Secure authentication required • Fair play enforced
 						</p>

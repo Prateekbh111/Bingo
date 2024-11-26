@@ -10,6 +10,7 @@ export const CANCEL_INIT_GAME = "cancel_init_game";
 export const MOVE = "move";
 export const GRID_FILLED = "grid_filled";
 export const RECONNECT = "reconnect";
+export const PENDING_GAME = "pending_game";
 export const GAME_TIME = "game_time";
 export const GAME_INVITE = "game_invite";
 export const SEND_GAME_INVITE = "send_game_invite";

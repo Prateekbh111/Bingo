@@ -50,4 +50,5 @@ type Payload = {
 	opponentLinesCompleted?: number;
 	player1TimeConsumed?: number;
 	player2TimeConsumed?: number;
+	isCoinsGame?: boolean;
 };

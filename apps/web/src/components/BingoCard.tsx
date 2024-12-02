@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
+import { BingoCell } from "@/types/types";
 
 export default function BingoCard({
 	card,

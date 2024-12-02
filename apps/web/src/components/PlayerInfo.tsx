@@ -2,6 +2,7 @@
 
 import { CARDFILL_TIME_MS, GAME_TIME_MS } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { PlayerData } from "@/types/types";
 
 interface PlayerInfoProps {
 	playerData?: PlayerData;
@@ -15,7 +16,6 @@ export default function PlayerInfo({
 	isCurrentPlayer,
 }: PlayerInfoProps) {
 	const bingoLetters = ["B", "I", "N", "G", "O"];
-
 	const getTimer = (timeConsumed: number, TotalTime: number) => {
 		const timeLeftMs = TotalTime - timeConsumed;
 		const minutes = Math.floor(timeLeftMs / (1000 * 60));
@@ -23,7 +23,6 @@ export default function PlayerInfo({
 		const remainingMillis = Math.floor(
 			((timeLeftMs % (1000 * 60)) % 1000) / 100,
 		);
-
 		return (
 			<div
 				className={`bg-secondary text-foreground p-2 rounded-md my-2 ${playerData?.isCardFilled ? (isTurn ? "animate-pulse duration-1000" : "") : "animate-pulse duration-1000"} ${minutes <= 0 && remainingSeconds <= 5 && "bg-red-500"}`}
@@ -46,7 +45,7 @@ export default function PlayerInfo({
 					alt={playerData?.data ? playerData.data.name! : "Opponent"}
 				/>
 				<AvatarFallback>
-					{playerData?.data ? playerData.data.name![0].toUpperCase() : "O"}
+					{playerData?.data ? playerData!.data!.name.toUpperCase()[0] : "O"}
 				</AvatarFallback>
 			</Avatar>
 			<div className="w-full flex md:flex-col md:text-center justify-between items-center">

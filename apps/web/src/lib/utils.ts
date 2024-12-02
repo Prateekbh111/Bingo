@@ -1,3 +1,4 @@
+import { BingoCell } from "@/types/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 

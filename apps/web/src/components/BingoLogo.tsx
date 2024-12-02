@@ -1,6 +1,5 @@
 "use client";
-import { SidebarProvider, useSidebar } from "./ui/sidebar";
-import { Button } from "./ui/button";
+import { useSidebar } from "./ui/sidebar";
 import { useRouter } from "next/navigation";
 
 export default function BingoLogo() {

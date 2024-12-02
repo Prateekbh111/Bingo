@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
@@ -18,10 +18,14 @@ const geistMono = localFont({
 export const metadata: Metadata = {
 	title: "Bingooo.site | Play Bingo Online",
 	description: "Bingooo.site - The best multiplayer Bingo game online!",
-	viewport: "width=device-width, initial-scale=1",
 	icons: {
 		icon: "/icon.svg",
 	},
+};
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
 };
 
 export default function RootLayout({

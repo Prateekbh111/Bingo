@@ -34,10 +34,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className="" suppressHydrationWarning>
-			{/* <head>
-				<link rel="icon" href="/icon.svg" />
-			</head> */}
+		<html lang="en" suppressHydrationWarning>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
@@ -45,11 +42,6 @@ export default function RootLayout({
 					{children}
 				</ThemeProvider>
 				<Toaster />
-				<script
-					async
-					src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1614796469628007"
-					crossOrigin="anonymous"
-				></script>
 			</body>
 		</html>
 	);

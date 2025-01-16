@@ -1,81 +1,130 @@
-# Turborepo starter
+# 🎉 Bingo Game Monorepo
 
-This is an official starter Turborepo.
+Welcome to the **Bingo Game Monorepo**! This repository contains both the **Next.js app** and the **WebSocket server** for real-time communication. The project is designed to provide an exciting and seamless multiplayer Bingo experience. 🚀
 
-## Using this example
+## 🗂️ Project Structure
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+This is a monorepo managed using **Turborepo**. Here's the structure:
 
 ```
-cd my-turborepo
-pnpm build
+root/
+├── apps/
+│   ├── web/         # Next.js frontend
+│   └── ws/          # WebSocket server
+├── packages/db/
+│   └── prisma/      # Prisma database schema
+│   └── src/         # Global DB singleton
+└── .turbo/          # Turborepo configuration
 ```
 
-### Develop
+### Apps:
 
-To develop all apps and packages, run the following command:
+- **web**: The main frontend for the Bingo game, built with Next.js.
+- **ws**: The backend server for real-time communication using WebSocket.
 
-```
-cd my-turborepo
-pnpm dev
-```
+---
 
-### Remote Caching
+## 🚀 Features
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- 🔥 **Real-time gameplay** powered by WebSocket.
+- 🎨 **Responsive UI** using modern design with **shadcn/ui**.
+- 🔗 **Secure deployment** on AWS EC2 with **NGINX** and **SSL**.
+- 📦 **Monorepo structure** for easy management and scalability.
+- 🛠️ **Turborepo** for efficient builds and development.
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+---
 
-```
-cd my-turborepo
-npx turbo login
-```
+## 📋 Requirements
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+- Node.js (v18 or later)
+- bun
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+---
 
-```
-npx turbo link
-```
+## 🛠️ Installation
 
-## Useful Links
+1. Clone the repository:
 
-Learn more about the power of Turborepo:
+   ```bash
+   git clone https://github.com/prateekbh111/bingooo.site.git
+   cd bingooo.site
+   ```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+2. Install dependencies:
+
+   ```bash
+   bun install
+   ```
+
+3. Set up environment variables:
+
+   Create a `.env` file in the `apps/web/` as well as `packages/db/` directory and add the following:
+
+   ```env
+   NEXTAUTH_URL
+   NEXTAUTH_SECRET
+   DATABASE_URL
+   GOOGLE_CLIENT_ID
+   GOOGLE_CLIENT_SECRET
+   PUSHER_APP_ID
+   NEXT_PUBLIC_PUSHER_APP_KEY
+   PUSHER_APP_SECRET
+   NEXT_PUBLIC_WEB_SOCKET_URL
+   ```
+
+4. Start the development servers:
+
+   ```bash
+   bun run dev
+   ```
+
+   This will start both the Next.js app and the WebSocket server.
+
+---
+
+## 🎮 Usage
+
+1. Open the Next.js app in your browser:
+
+   ```
+   http://localhost:3000
+   ```
+
+2. Create or join a Bingo game.
+
+3. Enjoy the game with your friends in real-time! 🎉
+
+---
+
+## 🔧 Commands
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the Next.js app.
+- `npm run start`: Starts the production server.
+- `npm run lint`: Runs linting.
+
+---
+
+## 🙌 Contributing
+
+Feel free to open issues or submit pull requests if you find bugs or have suggestions to improve the project. Contributions are always welcome! 🤝
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📧 Contact
+
+For any queries, reach out to **Prateek Bhardwaj**:
+
+- Email: [prateekbh111@gmail.com](mailto:prateekbh111@gmail.com)
+- Portfolio: [prateekbh111-portfolio.vercel.app](https://prateekbh111-portfolio.vercel.app)
+- X: [@prateekbh111](https://x.com/prateekbh111)
+
+---
+
+Happy coding! 🚀

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Features from "@/components/Features";
 import HowToPlay from "@/components/HowToPlay";
+import TipsAndGuides from "@/components/TipsAndGuides";
 
 export default async function page() {
 	const session = await getServerSession(authOptions);
@@ -13,6 +14,7 @@ export default async function page() {
 			<Navbar session={session!} />
 			<HeroSection session={session!} />
 			<Features />
+			<TipsAndGuides />
 			<HowToPlay session={session!} />
 			<Footer />
 		</div>

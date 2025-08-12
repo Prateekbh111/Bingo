@@ -5,17 +5,17 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 
-const sslOptions = {
-	cert: fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem")),
-	key: fs.readFileSync(path.resolve(__dirname, "../certs/privkey.pem")),
-};
+// const sslOptions = {
+// 	cert: fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem")),
+// 	key: fs.readFileSync(path.resolve(__dirname, "../certs/privkey.pem")),
+// };
 
-const server = https.createServer(sslOptions);
-server.listen(8080, () => {
-	console.log("Secure websocket server is listening on 8080🟢");
-});
+// const server = https.createServer(sslOptions);
+// server.listen(8080, () => {
+// 	console.log("Secure websocket server is listening on 8080🟢");
+// });
 
-const wss = new WebSocketServer({ server: server });
+const wss = new WebSocketServer({ port: 8080 });
 const bingoManager = new BingoManager();
 const secret = "secret";
 

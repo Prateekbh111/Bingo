@@ -51,8 +51,7 @@ export default function HeroSection({ session }: { session: Session }) {
 						transition={{ duration: 0.6, delay: 0.6 }}
 						className="text-gray-600 dark:text-gray-300 max-w-2xl text-lg md:text-xl leading-relaxed"
 					>
-						Join our vibrant online Bingo community and compete for exciting
-						prizes in a secure and fair gaming environment.
+						Experience the classic game of Bingo like never before! Join thousands of players from around the world in our free, secure, and fair online Bingo platform. No downloads required - play instantly in your browser with real-time multiplayer action.
 					</motion.p>
 
 					{/* Features */}

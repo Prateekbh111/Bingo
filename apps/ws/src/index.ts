@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 
 const sslOptions = {
-	cert: fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem")),
+	cert: fs.readFileSync(path.resolve(__dirname, "../certs/fullchain.pem")),
 	key: fs.readFileSync(path.resolve(__dirname, "../certs/privkey.pem")),
 };
 

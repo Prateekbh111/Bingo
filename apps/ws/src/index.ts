@@ -4,7 +4,7 @@ import { decode } from "next-auth/jwt";
 import https from "https";
 import http from "http";
 
-const port = process.env.PORT ? parseInt(process.env.PORT) : 8080;
+const port = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080;
 
 // Check if SSL certificates are provided via environment variables
 const sslCert = process.env.SSL_CERT;

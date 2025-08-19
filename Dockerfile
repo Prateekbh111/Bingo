@@ -1,5 +1,11 @@
-# Use Node.js as base
-FROM node:18-alpine
+# Use Node.js Debian-based image for better Prisma compatibility
+FROM node:18-slim
+
+# Install necessary packages for Prisma
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -18,7 +24,7 @@ COPY . .
 
 # Generate Prisma client and run migrations
 WORKDIR /app/packages/db
-RUN npx prisma generate
+RUN npx prisma generate --no-engine
 
 # Build web app
 WORKDIR /app/apps/web
@@ -36,7 +42,7 @@ EXPOSE 3000 8080
 
 # Create startup script
 RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'cd /app/packages/db && npx prisma migrate deploy &' >> /app/start.sh && \
+    echo 'cd /app/packages/db && npx prisma db push &' >> /app/start.sh && \
     echo 'cd /app/apps/web && npm start &' >> /app/start.sh && \
     echo 'cd /app/apps/ws && npm start &' >> /app/start.sh && \
     echo 'wait' >> /app/start.sh && \

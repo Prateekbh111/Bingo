@@ -24,10 +24,6 @@ if (useSSL) {
 	console.log(`WebSocket server starting on port ${port} (HTTP) 🟢`);
 }
 
-server.listen(port, () => {
-	console.log(`WebSocket server is listening on port ${port}`);
-});
-
 const wss = new WebSocketServer({ server: server });
 const bingoManager = new BingoManager();
 const secret = "secret";

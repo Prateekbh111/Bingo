@@ -2,17 +2,30 @@ import { WebSocketServer } from "ws";
 import { BingoManager } from "./BingoManager";
 import { decode } from "next-auth/jwt";
 import https from "https";
-import fs from "fs";
-import path from "path";
+import http from "http";
 
-const sslOptions = {
-	cert: fs.readFileSync(path.resolve(__dirname, "../certs/fullchain.pem")),
-	key: fs.readFileSync(path.resolve(__dirname, "../certs/privkey.pem")),
-};
+const port = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 
-const server = https.createServer(sslOptions);
-server.listen(8080, () => {
-	console.log("Secure websocket server is listening on 8080🟢");
+// Check if SSL certificates are provided via environment variables
+const sslCert = process.env.SSL_CERT;
+const sslKey = process.env.SSL_KEY;
+const useSSL = sslCert && sslKey;
+
+let server;
+if (useSSL) {
+	const sslOptions = {
+		cert: sslCert,
+		key: sslKey,
+	};
+	server = https.createServer(sslOptions);
+	console.log(`Secure WebSocket server starting on port ${port} 🔒`);
+} else {
+	server = http.createServer();
+	console.log(`WebSocket server starting on port ${port} (HTTP) 🟢`);
+}
+
+server.listen(port, () => {
+	console.log(`WebSocket server is listening on port ${port}`);
 });
 
 const wss = new WebSocketServer({ server: server });

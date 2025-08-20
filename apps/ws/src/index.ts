@@ -3,13 +3,15 @@ import { BingoManager } from "./BingoManager";
 import { decode } from "next-auth/jwt";
 import https from "https";
 import http from "http";
+import dotenv from "dotenv";
+dotenv.config();
 
 const port = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080;
 
 // Check if SSL certificates are provided via environment variables
 const sslCert = process.env.SSL_CERT;
 const sslKey = process.env.SSL_KEY;
-const useSSL = sslCert && sslKey;
+const useSSL = !!(sslCert && sslKey);
 
 let server;
 if (useSSL) {

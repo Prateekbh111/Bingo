@@ -62,8 +62,12 @@ export default function GameInterface({
 	}, [resetGame]);
 
 	useEffect(() => {
+		// Get WebSocket URL from environment or fallback to current domain
+		const wsUrl = process.env.NEXT_PUBLIC_WEB_SOCKET_URL || "ws.bingooo.site";
+		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
 		const newSocket = new WebSocket(
-			`wss://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${sessionToken}`,
+			`${protocol}//${wsUrl}:8080/token=${sessionToken}`,
 		);
 		newSocket.onopen = () => console.log("Connection established");
 		socketRef.current = newSocket;

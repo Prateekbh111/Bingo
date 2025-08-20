@@ -70,16 +70,18 @@ export async function POST(req: Request) {
 	}
 
 	//send friend request
-	await pusherServer.trigger(
-		toPusherKey(`user:${idToAdd}:friendRequests`),
-		"friendRequests",
-		{
-			id: session.user.id,
-			name: session.user.name,
-			username: session.user.username,
-			image: session.user.image,
-		},
-	);
+	if (pusherServer) {
+		await pusherServer.trigger(
+			toPusherKey(`user:${idToAdd}:friendRequests`),
+			"friendRequests",
+			{
+				id: session.user.id,
+				name: session.user.name,
+				username: session.user.username,
+				image: session.user.image,
+			},
+		);
+	}
 
 	await prisma.friendRequest.create({
 		data: {

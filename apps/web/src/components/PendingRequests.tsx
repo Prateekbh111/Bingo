@@ -17,6 +17,9 @@ export default function PendingRequests({
 		useState<FriendRequest[]>(friendRequests);
 
 	useEffect(() => {
+		// Only use pusher if available
+		if (!pusherClient) return;
+
 		pusherClient.subscribe(
 			toPusherKey(`user:${session.user.id}:friendRequests`),
 		);
@@ -32,11 +35,11 @@ export default function PendingRequests({
 		pusherClient.bind("friendRequests", friendRequestHandler);
 
 		return () => {
-			pusherClient.unsubscribe(
+			pusherClient?.unsubscribe(
 				toPusherKey(`user:${session?.user.id}:friendRequests`),
 			);
 
-			pusherClient.unbind("friendRequests");
+			pusherClient?.unbind("friendRequests");
 		};
 	}, [session.user.id]);
 

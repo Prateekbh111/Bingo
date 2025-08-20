@@ -11,4 +11,12 @@ services:
     ports:
       - "3000:3000"
       - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+          cpus: '0.8'
+        reservations:
+          memory: 400M
+          cpus: '0.4'
 

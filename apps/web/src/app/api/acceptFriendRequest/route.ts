@@ -47,21 +47,24 @@ export async function POST(req: Request) {
 
 		console.log("helaosdfasdf");
 
-		await pusherServer.trigger(
-			toPusherKey(`user:${session.user.id}:friends`),
-			"friends",
-			requestUserData,
-		);
-		await pusherServer.trigger(
-			toPusherKey(`user:${requestUserData.id}:friends`),
-			"friends",
-			{
-				id: session.user.id,
-				name: session.user.name,
-				username: session.user.username,
-				image: session.user.image,
-			},
-		);
+		// Only trigger pusher if available
+		if (pusherServer) {
+			await pusherServer.trigger(
+				toPusherKey(`user:${session.user.id}:friends`),
+				"friends",
+				requestUserData,
+			);
+			await pusherServer.trigger(
+				toPusherKey(`user:${requestUserData.id}:friends`),
+				"friends",
+				{
+					id: session.user.id,
+					name: session.user.name,
+					username: session.user.username,
+					image: session.user.image,
+				},
+			);
+		}
 
 		await prisma.friends.create({
 			data: {

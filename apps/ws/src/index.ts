@@ -26,6 +26,11 @@ if (useSSL) {
 	console.log(`WebSocket server starting on port ${port} (HTTP) 🟢`);
 }
 
+// Start the server listening on all interfaces
+server.listen(port, '0.0.0.0', () => {
+	console.log(`WebSocket server is listening on port ${port}`);
+});
+
 const wss = new WebSocketServer({ server: server });
 const bingoManager = new BingoManager();
 const secret = "secret";
@@ -60,5 +65,3 @@ wss.on("connection", async function connection(ws, req) {
 		bingoManager.removeUser(ws);
 	});
 });
-
-console.log("done");

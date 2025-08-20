@@ -23,6 +23,9 @@ export default function Friends({
 	const [userFriends, setUserFriends] = useState<Friend[]>(friends);
 
 	useEffect(() => {
+		// Only use pusher if available
+		if (!pusherClient) return;
+
 		pusherClient.subscribe(toPusherKey(`user:${session.user.id}:friends`));
 
 		const friendsHandler = (data: Friend) => {
@@ -32,9 +35,9 @@ export default function Friends({
 		pusherClient.bind("friends", friendsHandler);
 
 		return () => {
-			pusherClient.unsubscribe(toPusherKey(`user:${session?.user.id}:friends`));
+			pusherClient?.unsubscribe(toPusherKey(`user:${session?.user.id}:friends`));
 
-			pusherClient.unbind("friends");
+			pusherClient?.unbind("friends");
 		};
 	}, [session]);
 

@@ -61,17 +61,20 @@ export async function POST(req: Request) {
 			},
 		});
 
-		await pusherServer.trigger(
-			toPusherKey(`chat:${chatId}:messages`),
-			"messages",
-			{
-				chatId: prevChat.id,
-				content: message,
-				senderId: userId,
-				receiverId: otherUserId,
-				timestamp: new Date(),
-			},
-		);
+		// Only trigger pusher if available
+		if (pusherServer) {
+			await pusherServer.trigger(
+				toPusherKey(`chat:${chatId}:messages`),
+				"messages",
+				{
+					chatId: prevChat.id,
+					content: message,
+					senderId: userId,
+					receiverId: otherUserId,
+					timestamp: new Date(),
+				},
+			);
+		}
 		return Response.json({ success: true, message: "Sent" }, { status: 200 });
 	} catch (error) {
 		console.log(error);

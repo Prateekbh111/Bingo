@@ -40,20 +40,8 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          docker rmi -f $(docker images -q)
+          docker-compose down
           docker pull prateekbh111/bingo-app:latest
-          
-          # Stop and remove any containers on ports 3000/8080
-          docker ps --filter "publish=3000" --format "{{.ID}}" | xargs -r docker stop
-          docker ps --filter "publish=8080" --format "{{.ID}}" | xargs -r docker stop
-          docker ps --filter "publish=3000" --format "{{.ID}}" | xargs -r docker rm
-          docker ps --filter "publish=8080" --format "{{.ID}}" | xargs -r docker rm
-
-          # Stop/remove by name too
-          docker stop bingo-app || true
-          docker rm bingo-app || true
-
-          # Run new container
-          docker run -d --name bingo-app \
-            --env-file .env \
-            -p 3000:3000 -p 8080:8080 prateekbh111/bingo-app:latest
+          docker-compose up -d
         EOF

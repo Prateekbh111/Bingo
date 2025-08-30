@@ -40,7 +40,7 @@ export default function HeroSection({ session }: { session: Session }) {
 							<span className="inline-block bg-gradient-to-b from-green-400 to-green-700 bg-clip-text text-transparent">
 								B
 							</span>
-							ingo
+							ingo 2
 						</motion.h1>
 					</div>
 

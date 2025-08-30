@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Set Image Tag
+      id: vars
+      run: echo "TAG=prateekbh111/bingo-app:${GITHUB_SHA}" >> $GITHUB_ENV
+
+    - name: Build Docker image
+      run: docker build -t ${{ env.TAG }} .
+
+    - name: Push Docker image
+      run: docker push ${{ env.TAG }}
+
+    - name: Install SSH client
+      run: sudo apt-get install -y ssh
+
+    - name: Add SSH key
+      run: |
+        echo "${{ secrets.EC2_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          docker pull ${{ env.TAG }}
+          docker stop bingo-app || true
+          docker rm bingo-app || true
+          docker run -d --name bingo-app -p 3000:3000 -p 8080:8080 ${{ env.TAG }}
+        EOF

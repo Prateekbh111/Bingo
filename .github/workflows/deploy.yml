@@ -8,23 +8,26 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: Production-Bingooo.site  # 👈 This unlocks your secrets
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Set Image Tag
-      id: vars
-      run: echo "TAG=prateekbh111/bingo-app:${GITHUB_SHA}" >> $GITHUB_ENV
-
-    - name: Build Docker image
-      run: docker build -t ${{ env.TAG }} .
-
-    - name: Push Docker image
-      run: docker push ${{ env.TAG }}
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: prateekbh111/bingo-app:latest
+        platforms: linux/amd64
 
     - name: Install SSH client
       run: sudo apt-get install -y ssh
@@ -36,9 +39,11 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-          docker pull ${{ env.TAG }}
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          docker pull prateekbh111/bingo-app:latest
           docker stop bingo-app || true
           docker rm bingo-app || true
-          docker run -d --name bingo-app -p 3000:3000 -p 8080:8080 ${{ env.TAG }}
+          docker run -d --name bingo-app \
+            --env-file .env \
+            -p 3000:3000 -p 8080:8080 prateekbh111/bingo-app:latest
         EOF

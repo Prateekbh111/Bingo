@@ -2,7 +2,6 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { type AuthOptions } from "next-auth";
-import SignInCallback from "next-auth";
 import { v4 as uuidv4 } from "uuid";
 
 export const authOptions: AuthOptions = {
@@ -91,6 +90,5 @@ export const authOptions: AuthOptions = {
 	pages: {
 		signIn: "/login",
 	},
-
 	secret: process.env.NEXTAUTH_SECRET,
 };

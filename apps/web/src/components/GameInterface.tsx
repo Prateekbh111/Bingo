@@ -62,10 +62,10 @@ export default function GameInterface({
 	}, [resetGame]);
 
 	useEffect(() => {
-		// Get WebSocket URL from environment or fallback to current domain
-		const wsUrl = process.env.NEXT_PUBLIC_WEB_SOCKET_URL || "ws.bingooo.site";
+		// Get WebSocket URL from environment or fallback based on current domain
+		const wsUrl = process.env.NEXT_PUBLIC_WEB_SOCKET_URL ||
+			(window.location.hostname === 'localhost' ? 'localhost' : 'ws.bingooo.site');
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-
 		const newSocket = new WebSocket(
 			`${protocol}//${wsUrl}:8080/token=${sessionToken}`,
 		);

@@ -1,11 +1,10 @@
-# Use Node.js Debian-based image for better Prisma compatibility
-FROM node:18-slim
+# Use Node.js Alpine image
+FROM node:24-alpine
 
 # Install necessary packages for Prisma
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     openssl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates
 
 WORKDIR /app
 
@@ -16,36 +15,32 @@ COPY apps/ws/package.json ./apps/ws/
 COPY packages/db/package.json ./packages/db/
 COPY turbo.json ./
 
-# Install all dependencies in root
+# Install dependencies
 RUN npm install
 
-# Copy all source code
+# Copy source code
 COPY . .
 
-# Generate Prisma client and run migrations
+# Copy root .env to apps (your current approach)
+RUN if [ -f ".env" ]; then \
+    cp .env ./apps/web/.env && \
+    cp .env ./apps/ws/.env && \
+    echo "Copied .env to apps"; \
+    else \
+    echo "No .env file found at root"; \
+    fi
+
+# Generate Prisma client
 WORKDIR /app/packages/db
 RUN npx prisma generate --no-engine
 
-# Build web app
-WORKDIR /app/apps/web
-RUN npm run build
-
-# Build WebSocket server
-WORKDIR /app/apps/ws
-RUN npm run build
-
-# Back to root for runtime
+# Back to root app
 WORKDIR /app
+
+# Build applications
+RUN npm run build
 
 # Expose ports
 EXPOSE 3000 8080
 
-# Create startup script
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'cd /app/packages/db && npx prisma db push &' >> /app/start.sh && \
-    echo 'cd /app/apps/web && npm start &' >> /app/start.sh && \
-    echo 'cd /app/apps/ws && npm start &' >> /app/start.sh && \
-    echo 'wait' >> /app/start.sh && \
-    chmod +x /app/start.sh
-
-CMD ["/app/start.sh"]
+CMD ["npm", "run", "start"]

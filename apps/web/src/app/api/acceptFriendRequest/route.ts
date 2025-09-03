@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 	if (!session) {
 		return Response.json(
 			{ success: false, message: "UNAUTHORIZED" },
-			{ status: 402 },
+			{ status: 400 },
 		);
 	}
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 		if (!hasFriendRequest) {
 			return Response.json(
 				{ success: false, message: "You don't have friend request" },
-				{ status: 402 },
+				{ status: 400 },
 			);
 		}
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 		if (isAlreadyFriend) {
 			return Response.json(
 				{ success: false, message: "Already are friends" },
-				{ status: 402 },
+				{ status: 400 },
 			);
 		}
 

@@ -82,7 +82,6 @@ export default function GameSearchInterface() {
 	}
 
 	function handleJoinGame() {
-		console.log("Joining Game");
 		socketRef.current?.send(
 			JSON.stringify({
 				type: RECONNECT,

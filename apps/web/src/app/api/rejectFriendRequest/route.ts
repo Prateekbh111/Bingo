@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 		if (!hasFriendRequest) {
 			return Response.json(
 				{ success: false, message: "You don't have friend request" },
-				{ status: 402 },
+				{ status: 400 },
 			);
 		}
 

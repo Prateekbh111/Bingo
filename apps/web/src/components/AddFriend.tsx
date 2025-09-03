@@ -33,7 +33,6 @@ export default function AddFriend() {
 			setIsSendingRequest(false);
 			return;
 		}
-		console.log(formDataObject.username);
 		try {
 			const response = await axios.post<ApiResponse>("/api/sendFriendRequest", {
 				friendUsername: formDataObject.username,
@@ -45,7 +44,6 @@ export default function AddFriend() {
 			});
 		} catch (error) {
 			const axiosError = error as AxiosError<ApiResponse>;
-			console.log(axiosError);
 			const message = axiosError.response?.data.message;
 			if (message) {
 				toast({

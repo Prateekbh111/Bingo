@@ -36,7 +36,7 @@ export default async function layout({
 			receiverId: session.user.id,
 		},
 		select: {
-			id: true,
+			id: false,
 			sender: {
 				select: {
 					id: true,
@@ -50,7 +50,6 @@ export default async function layout({
 
 	const friendRequests: FriendRequest[] = allFriendRequests.map(
 		(request: {
-			id: string;
 			sender: {
 				name: string | null;
 				id: string;
@@ -59,7 +58,6 @@ export default async function layout({
 			};
 		}) => ({
 			...request.sender,
-			id: request.id,
 		})
 	);
 

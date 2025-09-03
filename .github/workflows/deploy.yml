@@ -9,7 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: Production-Bingooo.site
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3

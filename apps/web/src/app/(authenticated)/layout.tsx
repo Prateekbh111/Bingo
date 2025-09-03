@@ -49,9 +49,17 @@ export default async function layout({
 	});
 
 	const friendRequests: FriendRequest[] = allFriendRequests.map(
-		(request) => ({
+		(request: {
+			id: string;
+			sender: {
+				name: string | null;
+				id: string;
+				username: string | null;
+				image: string | null;
+			};
+		}) => ({
 			...request.sender,
-			id: request.id, // Use the request ID, not sender ID
+			id: request.id,
 		})
 	);
 

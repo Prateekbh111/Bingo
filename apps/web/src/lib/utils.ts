@@ -1,5 +1,6 @@
 import { BingoCell } from "@/types/types";
 import { type ClassValue, clsx } from "clsx";
+import { cookies } from "next/headers";
 import { twMerge } from "tailwind-merge";
 
 export const GAME_TIME_MS = 2 * 60 * 1000;

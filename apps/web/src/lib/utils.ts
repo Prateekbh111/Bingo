@@ -20,13 +20,24 @@ export const GAME_ENDED = "game_ended";
 export const FILLRANDOM = "fill_random";
 export const PLAYAGAIN = "play_again";
 export const EXIT = "exit";
+export const FRIEND_REQUEST_SENT = "friend_request_sent";
+export const FRIEND_REQUEST_ACCEPTED = "friend_request_accepted";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function toPusherKey(key: string) {
-	return key.replace(/:/g, "__");
+export function getTokenFromReq(req: Request) {
+	const cookies = req.headers.get("cookie");
+	let token = cookies?.split('; ')
+		.find(row => row.startsWith('next-auth.session-token='))
+		?.split('=')[1];
+	if (!token) {
+		token = cookies?.split('; ')
+			.find(row => row.startsWith('__Secure-next-auth.session-token='))
+			?.split('=')[1];
+	}
+	return token;
 }
 
 export function checkBingoWin(bingoCard: BingoCell[][]): number {

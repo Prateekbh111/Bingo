@@ -5,6 +5,8 @@ import { authOptions } from "../api/auth/[...nextauth]/options";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import LoginPage from "../(not-authenticated)/login/page";
+import { WebSocketProvider } from "@/context/WebSocketProvider";
+import { cookies } from "next/headers";
 
 export default async function layout({
 	children,
@@ -20,10 +22,70 @@ export default async function layout({
 	if (!user) {
 		return <LoginPage />;
 	}
+
+	// Get session token from cookies
+	const cookieStore = cookies();
+	let sessionToken = cookieStore.get("next-auth.session-token");
+	if (!sessionToken) {
+		sessionToken = cookieStore.get("__Secure-next-auth.session-token");
+	}
+
+	// Fetch friend requests and friends
+	const allFriendRequests = await prisma.friendRequest.findMany({
+		where: {
+			receiverId: session.user.id,
+		},
+		select: {
+			id: true,
+			sender: {
+				select: {
+					id: true,
+					name: true,
+					username: true,
+					image: true,
+				},
+			},
+		},
+	});
+
+	const friendRequests: FriendRequest[] = allFriendRequests.map(
+		(request) => ({
+			...request.sender,
+			id: request.id, // Use the request ID, not sender ID
+		})
+	);
+
+	const allFriends = await prisma.friends.findMany({
+		where: {
+			friendOfId: session.user.id,
+		},
+		select: {
+			friend: {
+				select: {
+					id: true,
+					name: true,
+					username: true,
+					image: true,
+				},
+			},
+		},
+	});
+
+	const friends: Friend[] = allFriends.map(
+		(request: { friend: Friend }) => request.friend,
+	);
+
 	return (
-		<SidebarProvider defaultOpen={false}>
-			<AppSidebar session={session!} />
-			<main className="w-full">{children}</main>
-		</SidebarProvider>
+		<WebSocketProvider
+			sessionToken={sessionToken ? sessionToken.value : undefined}
+			session={session}
+			initialFriendRequests={friendRequests}
+			initialFriends={friends}
+		>
+			<SidebarProvider defaultOpen={false}>
+				<AppSidebar session={session!} />
+				<main className="w-full">{children}</main>
+			</SidebarProvider>
+		</WebSocketProvider>
 	);
 }

@@ -21,7 +21,7 @@ export default function DynamicButton({
 
 	return (
 		<Button
-			className={`hidden md:block opacity-0 md:opacity-100 ${isMobile && "block md:hidden opacity-100 md:opacity-0"}`}
+			className={`hidden md:block opacity-0 md:opacity-100 ${isMobile && "block md:hidden opacity-100 md:opacity-0 mt-4"}`}
 			variant={buttonType === EXIT ? "destructive" : "default"}
 			onClick={onClick}
 			size={"lg"}

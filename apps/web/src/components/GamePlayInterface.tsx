@@ -1,6 +1,5 @@
 // src/components/GameInterface/GamePlayInterface.tsx
 import React, { useEffect } from "react";
-import { Session } from "next-auth";
 import { useToast } from "@/hooks/use-toast";
 import {
 	CARDFILL_TIME_MS,
@@ -13,25 +12,23 @@ import {
 import PlayerInfo from "./PlayerInfo";
 import BingoCard from "./BingoCard";
 import GameButtons from "./GameButtons";
-import { BingoCell, GameAction, GameState, PlayerData } from "@/types/types";
+import { BingoCell, PlayerData } from "@/types/types";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 interface GamePlayInterfaceProps {
-	gameState: GameState;
 	isMobile: boolean;
-	dispatch: React.Dispatch<GameAction>;
-	socketRef: React.MutableRefObject<WebSocket | null>;
-	session: Session;
-	resetGame: () => void;
 }
 
 export default function GamePlayInterface({
-	gameState,
 	isMobile,
-	dispatch,
-	socketRef,
-	resetGame,
 }: GamePlayInterfaceProps) {
 	const { toast } = useToast();
+	const {
+		socket: socketRef,
+		gameState,
+		dispatch,
+		resetGame
+	} = useWebSocket();
 
 	useEffect(() => {
 		let startTimestamp = Date.now();
@@ -48,9 +45,9 @@ export default function GamePlayInterface({
 				timeConsumed:
 					gameState.userData.isCardFilled && gameState.opponentData.isCardFilled
 						? gameState.userData.timeConsumed +
-							(gameState.userData.playerNumber === gameState.turn
-								? elapsedTime
-								: 0)
+						(gameState.userData.playerNumber === gameState.turn
+							? elapsedTime
+							: 0)
 						: gameState.userData.timeConsumed,
 			};
 
@@ -61,9 +58,9 @@ export default function GamePlayInterface({
 				timeConsumed:
 					gameState.userData.isCardFilled && gameState.opponentData.isCardFilled
 						? gameState.opponentData.timeConsumed +
-							(gameState.opponentData.playerNumber === gameState.turn
-								? elapsedTime
-								: 0)
+						(gameState.opponentData.playerNumber === gameState.turn
+							? elapsedTime
+							: 0)
 						: gameState.opponentData.timeConsumed,
 			};
 

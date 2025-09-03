@@ -1,7 +1,5 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
-import { pusherServer } from "@/lib/pusher";
-import { toPusherKey } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -60,21 +58,6 @@ export async function POST(req: Request) {
 				timestamp: new Date(),
 			},
 		});
-
-		// Only trigger pusher if available
-		if (pusherServer) {
-			await pusherServer.trigger(
-				toPusherKey(`chat:${chatId}:messages`),
-				"messages",
-				{
-					chatId: prevChat.id,
-					content: message,
-					senderId: userId,
-					receiverId: otherUserId,
-					timestamp: new Date(),
-				},
-			);
-		}
 		return Response.json({ success: true, message: "Sent" }, { status: 200 });
 	} catch (error) {
 		console.log(error);

@@ -1,12 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
-import { pusherServer } from "@/lib/pusher";
-import { toPusherKey } from "@/lib/utils";
 import prisma from "@/lib/prisma";
+import { FRIEND_REQUEST_ACCEPTED, getTokenFromReq } from "@/lib/utils";
 
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions);
 	const requestUserData: FriendRequest = await req.json();
+	const token = getTokenFromReq(req);
+	const ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${token}`);
 
 	if (!session) {
 		return Response.json(
@@ -36,8 +37,6 @@ export async function POST(req: Request) {
 				friendId: requestUserData.id!,
 			},
 		});
-
-		console.log(isAlreadyFriend);
 		if (isAlreadyFriend) {
 			return Response.json(
 				{ success: false, message: "Already are friends" },
@@ -45,26 +44,27 @@ export async function POST(req: Request) {
 			);
 		}
 
-		console.log("helaosdfasdf");
 
-		// Only trigger pusher if available
-		if (pusherServer) {
-			await pusherServer.trigger(
-				toPusherKey(`user:${session.user.id}:friends`),
-				"friends",
-				requestUserData,
-			);
-			await pusherServer.trigger(
-				toPusherKey(`user:${requestUserData.id}:friends`),
-				"friends",
-				{
-					id: session.user.id,
-					name: session.user.name,
-					username: session.user.username,
-					image: session.user.image,
-				},
-			);
-		}
+		ws.send(JSON.stringify({
+			type: FRIEND_REQUEST_ACCEPTED,
+			payload: {
+				friendId: requestUserData.id,
+				id: session.user.id,
+				name: session.user.name,
+				username: session.user.username,
+				image: session.user.image,
+			}
+		}));
+		ws.send(JSON.stringify({
+			type: FRIEND_REQUEST_ACCEPTED,
+			payload: {
+				friendId: session.user.id,
+				id: requestUserData.id,
+				name: requestUserData.name,
+				username: requestUserData.username,
+				image: requestUserData.image,
+			}
+		}));
 
 		await prisma.friends.create({
 			data: {

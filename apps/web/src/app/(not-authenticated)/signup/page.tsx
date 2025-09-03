@@ -6,11 +6,6 @@ import Link from 'next/link'
 import { FcGoogle } from 'react-icons/fc'
 
 export default function SignupPage() {
-  const handleGoogleSignup = () => {
-    signIn("google", {callbackUrl: "/"});
-    console.log('Google signup initiated')
-  }
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md rounded-xl shadow-xl">
@@ -19,10 +14,10 @@ export default function SignupPage() {
           <CardDescription className="text-center">Sign up for an account using Google</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <Button 
+          <Button
             // variant={"outline"}
             className="w-full max-w-sm rounded-md"
-            onClick={handleGoogleSignup}
+            onClick={() => signIn("google", { callbackUrl: "/" })}
           >
             <FcGoogle className="w-5 h-5 mr-2" />
             Sign up with Google
@@ -31,8 +26,8 @@ export default function SignupPage() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="text-primary underline-offset-4 transition-colors hover:underline"
             >
               Log in

@@ -15,6 +15,8 @@ import {
 	CANCEL_INIT_GAME,
 	RECONNECT,
 	PENDING_GAME,
+	FRIEND_REQUEST_SENT,
+	FRIEND_REQUEST_ACCEPTED,
 } from "./types";
 import { Game } from "./Game";
 
@@ -35,6 +37,10 @@ interface Message {
 		number?: number;
 		result?: GAME_RESULT;
 		by?: GAME_STATUS;
+		id?: string;
+		name?: string;
+		username?: string;
+		image?: string;
 	};
 }
 
@@ -48,7 +54,10 @@ export class BingoManager {
 		this.users = this.users.filter(
 			(u) => u.socket.readyState === WebSocket.OPEN,
 		);
-		this.users.push(user);
+		const isUserAlreadyExists = this.users.find((u) => u.id === user.id);
+		if (!isUserAlreadyExists) {
+			this.users.push(user);
+		}
 		this.attachMessageHandler(user);
 	}
 
@@ -71,7 +80,6 @@ export class BingoManager {
 	private attachMessageHandler(user: User): void {
 		user.socket.on("message", (data) => {
 			const message: Message = JSON.parse(data.toString());
-
 			switch (message.type) {
 				case INIT_GAME:
 					this.handleInitGame(user);
@@ -99,6 +107,12 @@ export class BingoManager {
 					break;
 				case GAME_ENDED:
 					this.handleGameEnded(user, message);
+					break;
+				case FRIEND_REQUEST_SENT:
+					this.handleFriendRequestSent(user, message);
+					break;
+				case FRIEND_REQUEST_ACCEPTED:
+					this.handleFriendRequestAccepted(user, message);
 					break;
 			}
 		});
@@ -239,6 +253,36 @@ export class BingoManager {
 
 		if (game.isGameOver) {
 			this.games = this.games.filter((g) => !g.isGameOver);
+		}
+	}
+
+	private handleFriendRequestSent(user: User, message: Message): void {
+		const recipient = this.users.find((u) => u.id === message.payload.friendId);
+		if (recipient) {
+			recipient.socket.send(JSON.stringify({
+				type: FRIEND_REQUEST_SENT,
+				payload: {
+					id: message.payload.id,
+					name: message.payload.name,
+					username: message.payload.username,
+					image: message.payload.image,
+				}
+			}));
+		}
+	}
+
+	private handleFriendRequestAccepted(user: User, message: Message): void {
+		const recipient = this.users.find((u) => u.id === message.payload.friendId);
+		if (recipient) {
+			recipient.socket.send(JSON.stringify({
+				type: FRIEND_REQUEST_ACCEPTED,
+				payload: {
+					id: message.payload.id,
+					name: message.payload.name,
+					username: message.payload.username,
+					image: message.payload.image,
+				}
+			}));
 		}
 	}
 

@@ -36,7 +36,6 @@ export const initialGameState: GameState = {
 };
 
 export const gameReducer: Reducer<GameState, GameAction> = (state, action) => {
-	console.log(action.type);
 	switch (action.type) {
 		case "INIT_GAME":
 			return {

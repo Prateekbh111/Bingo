@@ -1,13 +1,11 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
-import { pusherServer } from "@/lib/pusher";
-import { toPusherKey } from "@/lib/utils";
+import { FRIEND_REQUEST_SENT, getTokenFromReq } from "@/lib/utils";
 
 export async function POST(req: Request) {
 	const { friendUsername }: { friendUsername: string } = await req.json();
 	const session = await getServerSession(authOptions);
-
 	if (!session) {
 		return Response.json(
 			{ success: false, message: "Not Authorized" },
@@ -15,6 +13,8 @@ export async function POST(req: Request) {
 		);
 	}
 
+	const token = getTokenFromReq(req);
+	const ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${token}`);
 	const currUsername = session.user.username;
 
 	if (currUsername === friendUsername) {
@@ -69,19 +69,17 @@ export async function POST(req: Request) {
 		);
 	}
 
-	//send friend request
-	if (pusherServer) {
-		await pusherServer.trigger(
-			toPusherKey(`user:${idToAdd}:friendRequests`),
-			"friendRequests",
-			{
-				id: session.user.id,
-				name: session.user.name,
-				username: session.user.username,
-				image: session.user.image,
-			},
-		);
-	}
+	//send friend request through ws (if available) otherwise create friend request in database but in that case other have to refresh to see the friend request
+	ws?.send(JSON.stringify({
+		type: FRIEND_REQUEST_SENT,
+		payload: {
+			friendId: idToAdd,
+			id: session.user.id,
+			name: session.user.name,
+			username: session.user.username,
+			image: session.user.image,
+		}
+	}));
 
 	await prisma.friendRequest.create({
 		data: {

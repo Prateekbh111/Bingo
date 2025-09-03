@@ -1,17 +1,18 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Button } from "./ui/button";
 import { LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { FriendRequestsAction } from "@/lib/FriendRequestsReducer";
 
 export function RequestCard({
 	friendRequest,
-	setUserFriendRequests,
+	dispatchFriendRequest,
 }: {
 	friendRequest: FriendRequest;
-	setUserFriendRequests: Dispatch<SetStateAction<FriendRequest[]>>;
+	dispatchFriendRequest: Dispatch<FriendRequestsAction>;
 }) {
 	const { toast } = useToast();
 	const [isDenying, setIsDenying] = useState<boolean>(false);
@@ -29,9 +30,7 @@ export function RequestCard({
 				title: "Success",
 				description: `${response.data.message}`,
 			});
-			setUserFriendRequests((prevRequests) =>
-				prevRequests.filter((request) => request.id !== friendData.id),
-			);
+			dispatchFriendRequest({ type: "REMOVE_REQUEST", payload: { requestId: friendData.id! } });
 		} catch {
 			toast({
 				title: "Uh oh! Something went wrong.",
@@ -54,9 +53,7 @@ export function RequestCard({
 				title: "Success",
 				description: `${response.data.message}`,
 			});
-			setUserFriendRequests((prevRequests) =>
-				prevRequests.filter((request) => request.id !== friendData.id),
-			);
+			dispatchFriendRequest({ type: "REMOVE_REQUEST", payload: { requestId: friendData.id! } });
 		} catch {
 			toast({
 				title: "Uh oh! Something went wrong.",

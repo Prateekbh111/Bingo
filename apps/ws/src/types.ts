@@ -11,6 +11,8 @@ export const SEND_GAME_INVITE = "send_game_invite";
 export const ACCEPT_GAME_INVITE = "accept_game_invite";
 export const GAME_ENDED = "game_ended";
 export const EXIT_GAME = "exit_game";
+export const FRIEND_REQUEST_SENT = "friend_request_sent";
+export const FRIEND_REQUEST_ACCEPTED = "friend_request_accepted";
 
 export type Type =
 	| typeof INIT_GAME
@@ -25,7 +27,9 @@ export type Type =
 	| typeof SEND_GAME_INVITE
 	| typeof ACCEPT_GAME_INVITE
 	| typeof GAME_ENDED
-	| typeof EXIT_GAME;
+	| typeof EXIT_GAME
+	| typeof FRIEND_REQUEST_SENT
+	| typeof FRIEND_REQUEST_ACCEPTED;
 export const GAME_TIME_MS = 2 * 60 * 1000;
 export type GAME_STATUS = "BINGO" | "TIME_UP" | "PLAYER_EXIT";
 export type GAME_RESULT = "PLAYER1_WINS" | "PLAYER2_WINS";

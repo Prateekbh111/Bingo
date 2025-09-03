@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: Production-Bingooo.site  # 👈 This unlocks your secrets
+    environment: Production-Bingooo.site
 
     steps:
     - name: Checkout code

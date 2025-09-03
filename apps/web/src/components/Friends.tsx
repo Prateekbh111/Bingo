@@ -4,43 +4,16 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Card } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { pusherClient } from "@/lib/pusher";
-import { useEffect, useState } from "react";
-import { toPusherKey } from "@/lib/utils";
-import { Session } from "next-auth";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 export default function Friends({
-	friends,
 	disabled,
 	handlePlayWithFriend,
-	session,
 }: {
-	friends: Friend[];
 	disabled: boolean;
 	handlePlayWithFriend: (id: string) => void;
-	session: Session;
 }) {
-	const [userFriends, setUserFriends] = useState<Friend[]>(friends);
-
-	useEffect(() => {
-		// Only use pusher if available
-		if (!pusherClient) return;
-
-		pusherClient.subscribe(toPusherKey(`user:${session.user.id}:friends`));
-
-		const friendsHandler = (data: Friend) => {
-			setUserFriends((prevFriends) => [...prevFriends, data]);
-		};
-
-		pusherClient.bind("friends", friendsHandler);
-
-		return () => {
-			pusherClient?.unsubscribe(toPusherKey(`user:${session?.user.id}:friends`));
-
-			pusherClient?.unbind("friends");
-		};
-	}, [session]);
-
+	const { userFriends } = useWebSocket();
 	return (
 		<div className="space-y-4">
 			<h2 className="text-lg font-semibold flex items-center gap-2">
@@ -56,7 +29,7 @@ export default function Friends({
 							<Card key={user.id} className="p-4">
 								<div className="flex items-center gap-4">
 									<Avatar className="h-12 w-12">
-										<AvatarImage src={user.image!} />
+										<AvatarImage src={user.image || ""} alt={user.name!} />
 										<AvatarFallback>
 											{user.name![0].toUpperCase()}
 										</AvatarFallback>

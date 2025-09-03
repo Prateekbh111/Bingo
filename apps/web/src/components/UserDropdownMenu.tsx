@@ -1,11 +1,8 @@
 "use client";
 import {
 	ChevronsUpDown,
-	Handshake,
 	LogOut,
-	SquareUserRound,
 	SunMoon,
-	TicketX,
 	User,
 } from "lucide-react";
 
@@ -16,7 +13,6 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuPortal,
 	DropdownMenuSeparator,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
@@ -42,7 +38,7 @@ export function UserDropdownMenu({ session }: { session: Session }) {
 					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 				>
 					<Avatar className="h-8 w-8 rounded-lg">
-						<AvatarImage src={session.user.image!} alt={session.user.name!} />
+						<AvatarImage src={session.user.image || ""} alt={session.user.name!} />
 						<AvatarFallback className="rounded-lg">
 							{session.user.name![0]}
 						</AvatarFallback>

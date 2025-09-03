@@ -13,11 +13,6 @@ import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 
 export default function LoginPage() {
-	const handleGoogleLogin = () => {
-		signIn("google", { callbackUrl: "/dashboard" });
-		console.log("Google login initiated");
-	};
-
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-background p-4">
 			<Card className="w-full max-w-md rounded-xl shadow-xl">
@@ -32,7 +27,7 @@ export default function LoginPage() {
 				<CardContent className="flex justify-center">
 					<Button
 						className="w-full max-w-sm rounded-md"
-						onClick={handleGoogleLogin}
+						onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
 					>
 						<FcGoogle className="w-5 h-5 mr-2" />
 						Sign in with Google

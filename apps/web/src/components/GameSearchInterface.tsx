@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { Session } from "next-auth";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -20,26 +19,17 @@ import {
 	CANCEL_INIT_GAME,
 	GAME_ENDED,
 	RECONNECT,
+	SEND_GAME_INVITE,
 } from "@/lib/utils";
-import { GameAction, GameState } from "@/types/types";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
-interface GameSearchInterfaceProps {
-	friends: Friend[];
-	session: Session;
-	gameState: GameState;
-	userCoins: number;
-	dispatch: React.Dispatch<GameAction>;
-	socketRef: React.MutableRefObject<WebSocket | null>;
-}
-
-export default function GameSearchInterface({
-	friends,
-	session,
-	gameState,
-	userCoins,
-	dispatch,
-	socketRef,
-}: GameSearchInterfaceProps) {
+export default function GameSearchInterface() {
+	const {
+		socket: socketRef,
+		gameState,
+		dispatch,
+		userCoins
+	} = useWebSocket();
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -64,7 +54,7 @@ export default function GameSearchInterface({
 
 	function handlePlayWithFriend(friendId: string) {
 		socketRef.current?.send(
-			JSON.stringify({ type: "SEND_GAME_INVITE", payload: { friendId } }),
+			JSON.stringify({ type: SEND_GAME_INVITE, payload: { friendId } }),
 		);
 	}
 
@@ -224,10 +214,8 @@ export default function GameSearchInterface({
 						</div>
 					</div>
 					<Friends
-						friends={friends}
 						disabled={gameState.normalGameDisable || gameState.coinsGameDisable}
 						handlePlayWithFriend={handlePlayWithFriend}
-						session={session}
 					/>
 				</div>
 			</div>

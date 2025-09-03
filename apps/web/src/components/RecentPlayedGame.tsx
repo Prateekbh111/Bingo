@@ -95,10 +95,10 @@ export default function RecentlyPlayedGames({
 									<Badge
 										variant={
 											game.result === "PLAYER1_WINS" &&
-											game.player1.id === session.user.id
+												game.player1.id === session.user.id
 												? "default"
 												: game.result === "PLAYER2_WINS" &&
-													  game.player2.id === session.user.id
+													game.player2.id === session.user.id
 													? "default"
 													: "secondary"
 										}
@@ -106,8 +106,8 @@ export default function RecentlyPlayedGames({
 									>
 										{(game.result === "PLAYER1_WINS" &&
 											game.player1.id === session.user.id) ||
-										(game.result === "PLAYER2_WINS" &&
-											game.player2.id === session.user.id) ? (
+											(game.result === "PLAYER2_WINS" &&
+												game.player2.id === session.user.id) ? (
 											<>
 												<Trophy className="w-3 h-3" />
 												<span>Won</span>

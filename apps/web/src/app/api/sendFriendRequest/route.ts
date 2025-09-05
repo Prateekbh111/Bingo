@@ -14,7 +14,8 @@ export async function POST(req: Request) {
 	}
 
 	const token = getTokenFromReq(req);
-	const ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${token}`);
+	console.log("websocket url", `${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${token}`);
+	const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${token}`);
 	const currUsername = session.user.username;
 
 	if (currUsername === friendUsername) {

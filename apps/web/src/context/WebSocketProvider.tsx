@@ -236,13 +236,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     useEffect(() => {
         if (!sessionToken) return;
-
-        // Get WebSocket URL from environment or fallback based on current domain
-        const wsUrl = process.env.NEXT_PUBLIC_WEB_SOCKET_URL ||
-            (window.location.hostname === 'localhost' ? 'localhost' : 'ws.bingooo.site');
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-
-        const newSocket = new WebSocket(`${protocol}//${wsUrl}:8080/token=${sessionToken}`);
+        const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${sessionToken}`);
 
         newSocket.onopen = () => {
             setIsConnected(true);

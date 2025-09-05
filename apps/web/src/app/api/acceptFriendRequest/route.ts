@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 	const session = await getServerSession(authOptions);
 	const requestUserData: FriendRequest = await req.json();
 	const token = getTokenFromReq(req);
-	const ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:8080/token=${token}`);
+	const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${token}`);
 
 	if (!session) {
 		return Response.json(

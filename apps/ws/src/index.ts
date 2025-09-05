@@ -1,6 +1,7 @@
 import { WebSocketServer } from "ws";
 import { BingoManager } from "./BingoManager";
 import { decode } from "next-auth/jwt";
+import fs from "fs";
 import https from "https";
 import http from "http";
 import dotenv from "dotenv";
@@ -9,15 +10,15 @@ dotenv.config();
 const port = process.env.NEXT_PUBLIC_WS_PORT ? parseInt(process.env.NEXT_PUBLIC_WS_PORT) : 8080;
 
 // Check if SSL certificates are provided via environment variables
-const sslCert = process.env.SSL_CERT;
-const sslKey = process.env.SSL_KEY;
-const useSSL = !!(sslCert && sslKey);
+const sslCertPath = process.env.SSL_CERT;
+const sslKeyPath = process.env.SSL_KEY;
+const useSSL = !!(sslCertPath && sslKeyPath);
 
 let server;
 if (useSSL) {
 	const sslOptions = {
-		cert: sslCert,
-		key: sslKey,
+		cert: fs.readFileSync(sslCertPath),
+		key: fs.readFileSync(sslKeyPath),
 	};
 	server = https.createServer(sslOptions);
 	console.log(`Secure WebSocket server starting on port ${port} 🔒`);

@@ -67,3 +67,19 @@ export function checkBingoWin(bingoCard: BingoCell[][]): number {
 
 	return Math.min(linesCompleted, 5);
 }
+
+export function getWsUrl(): string {
+	const envUrl = process.env.NEXT_PUBLIC_WEB_SOCKET_URL;
+	if (envUrl) return envUrl;
+
+	if (typeof window !== 'undefined') {
+		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const hostname =
+			window.location.hostname === 'localhost'
+				? 'localhost:8080'
+				: 'ws.bingooo.site:8080';
+		return `${protocol}//${hostname}`;
+	}
+
+	return 'wss://ws.bingooo.site:8080';
+}

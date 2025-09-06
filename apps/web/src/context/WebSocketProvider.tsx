@@ -236,7 +236,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     useEffect(() => {
         if (!sessionToken) return;
-        const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${sessionToken}`);
+        const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}/token=${sessionToken}`);
 
         newSocket.onopen = () => {
             setIsConnected(true);

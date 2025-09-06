@@ -13,21 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        file: ./Dockerfile
-        push: true
-        tags: prateekbh111/bingo-app:latest
-        platforms: linux/amd64
-
     - name: Install SSH client
       run: sudo apt-get install -y ssh
 
@@ -35,6 +20,43 @@ jobs:
       run: |
         echo "${{ secrets.EC2_KEY }}" > private_key.pem
         chmod 600 private_key.pem
+
+    - name: Copy .env from EC2
+      run: |
+        scp -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/.env .env
+
+    - name: Print ALL envs
+      run: |
+        echo "📢 All envs from EC2 .env file:"
+        cat .env
+
+    - name: Extract NEXT_PUBLIC_* envs
+      id: extract_envs
+      run: |
+        echo "DOCKER_BUILD_ARGS=" >> $GITHUB_ENV
+        while IFS= read -r line; do
+          if echo "$line" | grep -q "^NEXT_PUBLIC_"; then
+            key=$(echo $line | cut -d '=' -f1)
+            val=$(echo $line | cut -d '=' -f2-)
+            echo "$key=$val" >> $GITHUB_ENV
+            # Append to build args string
+            echo "DOCKER_BUILD_ARGS=$(echo $DOCKER_BUILD_ARGS --build-arg $key=$val)" >> $GITHUB_ENV
+          fi
+        done < .env
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image
+      run: |
+        docker buildx build \
+          --platform linux/amd64 \
+          --push \
+          -t prateekbh111/bingo-app:latest \
+          $DOCKER_BUILD_ARGS .
 
     - name: Deploy to EC2
       run: |

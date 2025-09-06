@@ -21,6 +21,14 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Accept NEXT_PUBLIC build args
+ARG NEXT_PUBLIC_WS_PORT
+ARG NEXT_PUBLIC_WEB_SOCKET_URL
+
+# Expose them as envs so Next.js can read them at build
+ENV NEXT_PUBLIC_WS_PORT=$NEXT_PUBLIC_WS_PORT
+ENV NEXT_PUBLIC_WEB_SOCKET_URL=$NEXT_PUBLIC_WEB_SOCKET_URL
+
 # Copy root .env to apps (your current approach)
 RUN if [ -f ".env" ]; then \
     cp .env ./apps/web/.env && \

@@ -13,7 +13,6 @@ import {
     FRIEND_REQUEST_SENT,
     GAME_ENDED,
     GAME_INVITE,
-    getWsUrl,
     GRID_FILLED,
     INIT_GAME,
     MOVE,
@@ -237,7 +236,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     useEffect(() => {
         if (!sessionToken) return;
-        const newSocket = new WebSocket(`${getWsUrl()}/token=${sessionToken}`);
+        const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${sessionToken}`);
 
         newSocket.onopen = () => {
             setIsConnected(true);

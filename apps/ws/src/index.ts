@@ -7,7 +7,7 @@ import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
-const port = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080;
+const port = process.env.NEXT_PUBLIC_WS_PORT ? parseInt(process.env.NEXT_PUBLIC_WS_PORT) : 8080;
 
 // Check if SSL certificates are provided via environment variables
 const sslCertPath = process.env.SSL_CERT;

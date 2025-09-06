@@ -1,13 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
-import { FRIEND_REQUEST_ACCEPTED, getTokenFromReq, getWsUrl } from "@/lib/utils";
+import { FRIEND_REQUEST_ACCEPTED, getTokenFromReq } from "@/lib/utils";
 
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions);
 	const requestUserData: FriendRequest = await req.json();
 	const token = getTokenFromReq(req);
-	const ws = new WebSocket(`${getWsUrl()}/token=${token}`);
+	const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}:${process.env.NEXT_PUBLIC_WS_PORT}/token=${token}`);
 
 	if (!session) {
 		return Response.json(

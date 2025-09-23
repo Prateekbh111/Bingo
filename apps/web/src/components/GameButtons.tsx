@@ -1,6 +1,7 @@
 import { EXIT, FILLRANDOM, PLAYAGAIN } from "@/lib/utils";
 import DynamicButton from "./DynamicButton";
 import { GameResult } from "@/types/types";
+import { useAudio } from "@/context/AudioProvider";
 
 export default function GameButtons({
 	isGameStarted,
@@ -21,6 +22,22 @@ export default function GameButtons({
 	onExitClick: () => void;
 	onResetClick: () => void;
 }) {
+	const { playSoundEffect } = useAudio();
+
+	const handleFillRandomClick = () => {
+		playSoundEffect('click');
+		onFillRandomClick();
+	};
+
+	const handleExitClick = () => {
+		playSoundEffect('click');
+		onExitClick();
+	};
+
+	const handleResetClick = () => {
+		playSoundEffect('click');
+		onResetClick();
+	};
 	return (
 		<>
 			{isGameStarted && !isGameEnded && (
@@ -30,7 +47,7 @@ export default function GameButtons({
 					{!isCardFilled && (
 						<DynamicButton
 							isMobile={isMobile}
-							onClick={onFillRandomClick}
+							onClick={handleFillRandomClick}
 							buttonType={FILLRANDOM}
 						/>
 					)}
@@ -38,14 +55,14 @@ export default function GameButtons({
 					<DynamicButton
 						isMobile={isMobile}
 						buttonType={EXIT}
-						onClick={onExitClick}
+						onClick={handleExitClick}
 					/>
 				</div>
 			)}
 			{isGameEnded && gameResult.result == "" && (
 				<DynamicButton
 					isMobile={isMobile}
-					onClick={onResetClick}
+					onClick={handleResetClick}
 					buttonType={PLAYAGAIN}
 				/>
 			)}

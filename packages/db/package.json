@@ -4,10 +4,10 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"db:generate": "prisma generate",
+		"db:generate": "prisma generate --no-engine",
 		"db:push": "prisma db push --skip-generate",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"db:dev": "npx prisma migrate dev && npx prisma generate",
+		"db:dev": "npx prisma migrate dev && npx prisma generate --no-engine",
 		"db:seed": "prisma db seed"
 	},
 	"keywords": [],

@@ -18,7 +18,7 @@ coverage
 # Turbo
 .turbo
 
-prisma
+packages/db/prisma/migrations
 
 # Vercel
 .vercel

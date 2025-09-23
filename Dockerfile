@@ -22,11 +22,9 @@ RUN npm install
 COPY . .
 
 # Accept NEXT_PUBLIC build args
-ARG NEXT_PUBLIC_WS_PORT
 ARG NEXT_PUBLIC_WEB_SOCKET_URL
 
 # Expose them as envs so Next.js can read them at build
-ENV NEXT_PUBLIC_WS_PORT=$NEXT_PUBLIC_WS_PORT
 ENV NEXT_PUBLIC_WEB_SOCKET_URL=$NEXT_PUBLIC_WEB_SOCKET_URL
 
 # Generate Prisma client

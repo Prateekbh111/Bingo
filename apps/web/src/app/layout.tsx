@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import StructuredData from "@/components/StructuredData";
+import { AudioProvider } from "@/context/AudioProvider";
 
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
@@ -67,7 +68,9 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
 				<ThemeProvider attribute="class" defaultTheme="dark">
-					{children}
+					<AudioProvider>
+						{children}
+					</AudioProvider>
 				</ThemeProvider>
 				<Toaster />
 			</body>

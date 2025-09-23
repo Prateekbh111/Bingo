@@ -19,6 +19,7 @@ import {
     PENDING_GAME,
     RECONNECT,
 } from "@/lib/utils";
+import { useAudio } from "./AudioProvider";
 import axios from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Session } from "next-auth";
@@ -68,9 +69,19 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     const [isConnected, setIsConnected] = React.useState(false);
     const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
     const [userFriendRequests, dispatchFriendRequests] = useReducer(friendRequestsReducer, []);
+    const { playSoundEffect } = useAudio();
     const [userFriends, dispatchFriends] = useReducer(friendsReducer, []);
     const [userCoins, setUserCoins] = React.useState<number>(0);
     const { toast } = useToast();
+
+    const fetchCoins = useCallback(async () => {
+        try {
+            const response = await axios.get<ApiResponse>("/api/balance");
+            setUserCoins(response.data.payload!);
+        } catch (error) {
+            console.error("Failed to fetch coins:", error);
+        }
+    }, []);
 
     const resetGame = useCallback(() => {
         dispatch({ type: "RESET_GAME" });
@@ -91,16 +102,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         fetchCoins();
     }, [session]);
 
-    const fetchCoins = useCallback(async () => {
-        try {
-            const response = await axios.get<ApiResponse>("/api/balance");
-            setUserCoins(response.data.payload!);
-        } catch (error) {
-            console.error("Failed to fetch coins:", error);
-        }
-    }, []);
-
     const handleMove = useCallback((payload: Payload) => {
+        playSoundEffect('number');
         dispatch({ type: "MAKE_MOVE", payload: payload });
         dispatch({
             type: "SET_PLAYER_DATA",
@@ -175,6 +178,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
                     type: "INIT_GAME",
                     payload: messageJson.payload,
                 });
+                playSoundEffect("start");
                 break;
             case GAME_INVITE:
                 handleGameInvite(messageJson.payload);
@@ -192,6 +196,16 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
                 break;
             case GAME_ENDED:
                 if (gameState.gameResult?.result != "") return;
+
+                // Play win/lose sound effect based on game result
+                const result = messageJson.payload.result;
+                const isUserWinner = result === `${gameState.userData.playerNumber.toUpperCase()}_WINS`;
+                if (isUserWinner) {
+                    playSoundEffect('win');
+                } else {
+                    playSoundEffect('lose');
+                }
+
                 dispatch({ type: "END_GAME", payload: messageJson.payload });
                 fetchCoins();
                 break;

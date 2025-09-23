@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { BingoCell } from "@/types/types";
+import { useAudio } from "@/context/AudioProvider";
 
 export default function BingoCard({
 	card,
@@ -18,11 +19,17 @@ export default function BingoCard({
 	handleCellClick: (row: number, col: number) => void;
 }) {
 	const [cellSize, setCellSize] = useState(56);
+	const { playSoundEffect } = useAudio();
 
 	function updateCellSize(containerWidth: number) {
 		const newSize = Math.floor((containerWidth - 30) / 5);
 		setCellSize(Math.max(newSize, 56));
 	}
+
+	const handleCellClickWithSound = (row: number, col: number) => {
+		playSoundEffect('click');
+		handleCellClick(row, col);
+	};
 	return (
 		<Card
 			className={`w-full dark:bg-card bg-neutral-100 border-2 ${isGameStarted && "rounded-none md:rounded-md"}`}
@@ -46,11 +53,10 @@ export default function BingoCard({
 						row.map((cell, cellIndex) => (
 							<Button
 								key={`${rowIndex}-${cellIndex}`}
-								onClick={() => handleCellClick(rowIndex, cellIndex)}
+								onClick={() => handleCellClickWithSound(rowIndex, cellIndex)}
 								variant={cell.marked ? "default" : "outline"}
-								className={`p-0 font-bold text-lg ${
-									cell.marked && "bg-primary text-primary-foreground"
-								} ${lastNumber && cell.number === lastNumber && "ring-[3px] dark:ring-neutral-400 ring-neutral-600"}`}
+								className={`p-0 font-bold text-lg ${cell.marked && "bg-primary text-primary-foreground"
+									} ${lastNumber && cell.number === lastNumber && "ring-[3px] dark:ring-neutral-400 ring-neutral-600"}`}
 								style={{
 									width: `${cellSize}px`,
 									height: `${cellSize}px`,

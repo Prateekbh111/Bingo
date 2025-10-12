@@ -25,11 +25,6 @@ jobs:
       run: |
         scp -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/.env .env
 
-    - name: Print ALL envs
-      run: |
-        echo "📢 All envs from EC2 .env file:"
-        cat .env
-
     - name: Extract NEXT_PUBLIC_* envs
       id: extract_envs
       run: |

@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/api/', '/dashboard/', '/profile/'],
         },
-        sitemap: 'https://bingooo.site/sitemap.xml',
+        sitemap: 'https://bingo.prateekbh111.in/sitemap.xml',
     }
 }

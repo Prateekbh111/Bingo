@@ -6,8 +6,8 @@ import { authOptions } from "../api/auth/[...nextauth]/options";
 import { Trophy, Users, Shield, Clock, Gamepad2, Star } from "lucide-react";
 
 export const metadata = {
-    title: "About Us | Bingooo.site",
-    description: "Learn about Bingooo.site - The premier online Bingo gaming platform bringing players together from around the world.",
+    title: "About Us | Bingo",
+    description: "Learn about Bingo - The premier online Bingo gaming platform bringing players together from around the world.",
 };
 
 export default async function AboutPage() {
@@ -51,7 +51,7 @@ export default async function AboutPage() {
             <div className="container mx-auto px-4 py-20 pt-40">
                 <div className="max-w-4xl mx-auto text-center mb-12">
                     <h1 className="text-5xl font-bold mb-6 text-primary">
-                        About Bingooo.site
+                        About Bingo
                     </h1>
                     <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
                         The world&apos;s most engaging online Bingo platform, where traditional gameplay meets modern technology to create unforgettable gaming experiences.
@@ -77,13 +77,13 @@ export default async function AboutPage() {
                     </CardHeader>
                     <CardContent className="space-y-6 text-gray-700 dark:text-gray-300">
                         <p className="text-lg leading-relaxed">
-                            Bingooo.site was born from a passion for bringing the classic game of Bingo into the digital age. Founded by gaming enthusiasts who recognized the need for a modern, secure, and social Bingo platform, we set out to create something special.
+                            Bingo was born from a passion for bringing the classic game of Bingo into the digital age. Founded by gaming enthusiasts who recognized the need for a modern, secure, and social Bingo platform, we set out to create something special.
                         </p>
                         <p className="text-lg leading-relaxed">
                             Our team spent months researching what players really wanted: fair gameplay, social interaction, beautiful design, and most importantly, fun. We&apos;ve combined cutting-edge technology with timeless game mechanics to create an experience that both newcomers and Bingo veterans can enjoy.
                         </p>
                         <p className="text-lg leading-relaxed">
-                            Today, Bingooo.site serves thousands of players worldwide, hosting games 24/7 and continually improving based on community feedback. We&apos;re not just a gaming platform – we&apos;re a community where friendships are formed and memories are made.
+                            Today, Bingo serves thousands of players worldwide, hosting games 24/7 and continually improving based on community feedback. We&apos;re not just a gaming platform – we&apos;re a community where friendships are formed and memories are made.
                         </p>
                     </CardContent>
                 </Card>
@@ -136,7 +136,7 @@ export default async function AboutPage() {
                     </CardHeader>
                     <CardContent className="space-y-6 text-gray-700 dark:text-gray-300">
                         <p className="text-lg leading-relaxed">
-                            Bingooo.site is built on modern web technologies to ensure the best possible gaming experience:
+                            Bingo is built on modern web technologies to ensure the best possible gaming experience:
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -209,7 +209,7 @@ export default async function AboutPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">Website:</span>
-                                <span className="text-primary">bingooo.site</span>
+                                <span className="text-primary">bingo.prateekbh111.in</span>
                             </div>
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">

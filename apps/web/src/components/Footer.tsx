@@ -30,7 +30,7 @@ export default function Footer() {
 					<div className="md:col-span-1">
 						<div className="flex items-center gap-2 mb-4">
 							<Gamepad2 className="w-6 h-6 text-primary" />
-							<span className="text-xl font-bold text-primary">Bingooo.site</span>
+							<span className="text-xl font-bold text-primary">Bingo.prateekbh111.in</span>
 						</div>
 						<p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
 							The premier online Bingo platform bringing players together from around the world in a secure, fair, and fun gaming environment.
@@ -109,7 +109,7 @@ export default function Footer() {
 				<div className="border-t border-border mt-8 pt-8">
 					<div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
 						<p className="text-sm text-gray-600 dark:text-gray-400">
-							&copy; {currentYear} Bingooo.site. All rights reserved.
+							&copy; {currentYear} Bingo.prateekbh111.in. All rights reserved.
 						</p>
 						<p className="text-sm text-gray-600 dark:text-gray-400">
 							Made with ❤️ for the Bingo community

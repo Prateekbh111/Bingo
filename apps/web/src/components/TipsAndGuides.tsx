@@ -139,7 +139,7 @@ export default function TipsAndGuides() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-2xl text-center text-primary">
-                                Why Choose Bingooo.site?
+                                Why Choose Bingo?
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

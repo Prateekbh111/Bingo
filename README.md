@@ -46,8 +46,8 @@ root/
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/prateekbh111/bingooo.site.git
-   cd bingooo.site
+   git clone https://github.com/prateekbh111/Bingo
+   cd Bingo
    ```
 
 2. Install dependencies:

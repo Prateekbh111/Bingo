@@ -7,8 +7,8 @@ import { authOptions } from "../api/auth/[...nextauth]/options";
 import { Mail, MessageCircle, Clock, Users, Shield, Gamepad2 } from "lucide-react";
 
 export const metadata = {
-    title: "Contact Us | Bingooo.site",
-    description: "Get in touch with the Bingooo.site team. Support, feedback, partnership inquiries, and more.",
+    title: "Contact Us | Bingo",
+    description: "Get in touch with the Bingo team. Support, feedback, partnership inquiries, and more.",
 };
 
 export default async function ContactPage() {
@@ -23,7 +23,7 @@ export default async function ContactPage() {
         {
             icon: <Gamepad2 className="w-8 h-8 text-green-500" />,
             title: "Game Feedback",
-            description: "Share your thoughts on game features, suggest improvements, or report bugs. Your feedback helps us make Bingooo.site better."
+            description: "Share your thoughts on game features, suggest improvements, or report bugs. Your feedback helps us make Bingo better."
         },
         {
             icon: <Users className="w-8 h-8 text-purple-500" />,
@@ -186,7 +186,7 @@ export default async function ContactPage() {
                                     <a href="/how-to-play">How to Play Guide</a>
                                 </Button>
                                 <Button asChild variant="outline" size="lg">
-                                    <a href="/about">About Bingooo.site</a>
+                                    <a href="/about">About Bingo</a>
                                 </Button>
                                 <Button asChild variant="outline" size="lg">
                                     <a href="/terms">Terms of Service</a>
@@ -206,7 +206,7 @@ export default async function ContactPage() {
                                 Send us an email and we&apos;ll get back to you as soon as possible!
                             </p>
                             <Button asChild size="lg" className="text-lg px-8 py-3">
-                                <a href="mailto:prateekbh111@gmail.com?subject=Bingooo.site%20Inquiry">
+                                <a href="mailto:prateekbh111@gmail.com?subject=Bingo%20Inquiry">
                                     <Mail className="w-5 h-5 mr-2" />
                                     Send Email
                                 </a>

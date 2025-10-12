@@ -2,17 +2,17 @@ export default function StructuredData() {
     const websiteSchema = {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "Bingooo.site",
-        "url": "https://bingooo.site",
+        "name": "Bingo.prateekbh111.in",
+        "url": "https://bingo.prateekbh111.in",
         "description": "Free online multiplayer Bingo games with real-time gameplay",
         "publisher": {
             "@type": "Organization",
-            "name": "Bingooo.site",
-            "url": "https://bingooo.site"
+            "name": "Bingo.prateekbh111.in",
+            "url": "https://bingo.prateekbh111.in"
         },
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://bingooo.site/search?q={search_term_string}",
+            "target": "https://bingo.prateekbh111.in/search?q={search_term_string}",
             "query-input": "required name=search_term_string"
         }
     };
@@ -20,9 +20,9 @@ export default function StructuredData() {
     const organizationSchema = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Bingooo.site",
-        "url": "https://bingooo.site",
-        "logo": "https://bingooo.site/icon.svg",
+        "name": "Bingo.prateekbh111.in",
+        "url": "https://bingo.prateekbh111.in",
+        "logo": "https://bingo.prateekbh111.in/icon.svg",
         "description": "Premier online Bingo gaming platform offering free multiplayer games",
         "foundingDate": "2024",
         "contactPoint": {
@@ -57,19 +57,19 @@ export default function StructuredData() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://bingooo.site"
+                "item": "https://bingo.prateekbh111.in"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "How to Play",
-                "item": "https://bingooo.site/how-to-play"
+                "item": "https://bingo.prateekbh111.in/how-to-play"
             },
             {
                 "@type": "ListItem",
                 "position": 3,
                 "name": "About",
-                "item": "https://bingooo.site/about"
+                "item": "https://bingo.prateekbh111.in/about"
             }
         ]
     };

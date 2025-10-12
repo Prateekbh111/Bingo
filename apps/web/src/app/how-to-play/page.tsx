@@ -7,7 +7,7 @@ import { authOptions } from "../api/auth/[...nextauth]/options";
 import { Play, Users, Trophy, Clock, CheckCircle, Star, Grid3X3, Target } from "lucide-react";
 
 export const metadata = {
-    title: "How to Play Bingo | Bingooo.site",
+    title: "How to Play Bingo | Bingo",
     description: "Complete guide on how to play Bingo online at Bingooo.site. Learn the rules, strategies, and tips for winning.",
 };
 

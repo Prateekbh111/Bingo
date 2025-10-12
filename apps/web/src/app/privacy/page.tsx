@@ -5,8 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/options";
 
 export const metadata = {
-    title: "Privacy Policy | Bingooo.site",
-    description: "Privacy Policy for Bingooo.site - Learn how we protect your personal information and data.",
+    title: "Privacy Policy | Bingo",
+    description: "Privacy Policy for Bingo - Learn how we protect your personal information and data.",
 };
 
 export default async function PrivacyPage() {
@@ -30,7 +30,7 @@ export default async function PrivacyPage() {
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">1. Information We Collect</h2>
                                 <div className="space-y-3">
                                     <h3 className="text-lg font-medium">Personal Information</h3>
-                                    <p>When you create an account on Bingooo.site, we collect:</p>
+                                    <p>When you create an account on Bingo, we collect:</p>
                                     <ul className="list-disc list-inside space-y-2 ml-4">
                                         <li>Your email address (through Google OAuth)</li>
                                         <li>Your name and profile picture (from your Google account)</li>
@@ -107,7 +107,7 @@ export default async function PrivacyPage() {
 
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">7. Children&apos;s Privacy</h2>
-                                <p>Bingooo.site is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If we discover that we have collected information from a child under 13, we will delete it immediately.</p>
+                                <p>Bingo is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If we discover that we have collected information from a child under 13, we will delete it immediately.</p>
                             </section>
 
                             <section>
@@ -120,7 +120,7 @@ export default async function PrivacyPage() {
                                 <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
                                 <div className="mt-3 p-4 bg-secondary rounded-lg">
                                     <p><strong>Email:</strong> prateekbh111@gmail.com</p>
-                                    <p><strong>Website:</strong> bingooo.site</p>
+                                    <p><strong>Website:</strong> bingo.prateekbh111.in</p>
                                 </div>
                             </section>
                         </CardContent>

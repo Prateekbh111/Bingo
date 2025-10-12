@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://bingooo.site'
+    const baseUrl = 'https://bingo.prateekbh111.in'
 
     return [
         {

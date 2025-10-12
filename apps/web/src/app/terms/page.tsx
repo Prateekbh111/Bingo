@@ -5,8 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/options";
 
 export const metadata = {
-    title: "Terms of Service | Bingooo.site",
-    description: "Terms of Service for Bingooo.site - Rules and guidelines for using our online Bingo platform.",
+    title: "Terms of Service | Bingo",
+    description: "Terms of Service for Bingo - Rules and guidelines for using our online Bingo platform.",
 };
 
 export default async function TermsPage() {
@@ -28,12 +28,12 @@ export default async function TermsPage() {
                         <CardContent className="space-y-6 text-gray-700 dark:text-gray-300">
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">1. Acceptance of Terms</h2>
-                                <p>By accessing and using Bingooo.site (&ldquo;the Service&rdquo;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+                                <p>By accessing and using Bingo (&ldquo;the Service&rdquo;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
                             </section>
 
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">2. Service Description</h2>
-                                <p>Bingooo.site is an online gaming platform that provides:</p>
+                                <p>Bingo is an online gaming platform that provides:</p>
                                 <ul className="list-disc list-inside space-y-2 ml-4 mt-3">
                                     <li>Multiplayer Bingo games in real-time</li>
                                     <li>Social features to connect with other players</li>
@@ -96,14 +96,14 @@ export default async function TermsPage() {
 
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">6. Intellectual Property</h2>
-                                <p>All content on Bingooo.site, including but not limited to:</p>
+                                <p>All content on Bingo, including but not limited to:</p>
                                 <ul className="list-disc list-inside space-y-2 ml-4 mt-3">
                                     <li>Software code and game mechanics</li>
                                     <li>Graphics, designs, and user interface</li>
                                     <li>Logos, trademarks, and branding</li>
                                     <li>Audio and visual content</li>
                                 </ul>
-                                <p className="mt-3">Is owned by Bingooo.site or licensed to us. Users may not copy, modify, or distribute this content without permission.</p>
+                                <p className="mt-3">Is owned by Bingo or licensed to us. Users may not copy, modify, or distribute this content without permission.</p>
                             </section>
 
                             <section>
@@ -135,7 +135,7 @@ export default async function TermsPage() {
 
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">10. Limitation of Liability</h2>
-                                <p>Bingooo.site is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for:</p>
+                                <p>Bingo is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for:</p>
                                 <ul className="list-disc list-inside space-y-2 ml-4 mt-3">
                                     <li>Any damages arising from use of the service</li>
                                     <li>Loss of data or account information</li>
@@ -151,7 +151,7 @@ export default async function TermsPage() {
 
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-primary">12. Governing Law</h2>
-                                <p>These terms are governed by the laws of the jurisdiction where Bingooo.site operates. Any disputes will be resolved through binding arbitration.</p>
+                                <p>These terms are governed by the laws of the jurisdiction where Bingo operates. Any disputes will be resolved through binding arbitration.</p>
                             </section>
 
                             <section>
@@ -159,7 +159,7 @@ export default async function TermsPage() {
                                 <p>For questions about these Terms of Service, please contact us:</p>
                                 <div className="mt-3 p-4 bg-secondary rounded-lg">
                                     <p><strong>Email:</strong> prateekbh111@gmail.com</p>
-                                    <p><strong>Website:</strong> bingooo.site</p>
+                                    <p><strong>Website:</strong> bingo.prateekbh111.in</p>
                                 </div>
                             </section>
                         </CardContent>

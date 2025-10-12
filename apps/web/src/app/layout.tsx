@@ -18,33 +18,33 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-	title: "Bingooo.site | Free Online Bingo Games - Play with Friends Worldwide",
-	description: "Join thousands of players on Bingooo.site, the premier free online Bingo platform. Play real-time multiplayer Bingo games, connect with friends, and enjoy fair gameplay in a secure environment. No downloads required!",
+	title: "Bingo | Free Online Bingo Games - Play with Friends Worldwide",
+	description: "Join thousands of players on Bingo, the premier free online Bingo platform. Play real-time multiplayer Bingo games, connect with friends, and enjoy fair gameplay in a secure environment. No downloads required!",
 	keywords: "online bingo, free bingo games, multiplayer bingo, bingo online, play bingo, bingo with friends, real-time bingo, bingo community, free online games",
-	authors: [{ name: "Prateek Bhardwaj", url: "https://prateekbh111-portfolio.vercel.app" }],
+	authors: [{ name: "Prateek Bhardwaj", url: "https://prateekbh111.in" }],
 	creator: "Prateek Bhardwaj",
-	publisher: "Bingooo.site",
+	publisher: "Bingo",
 	robots: "index, follow",
 	icons: {
 		icon: "/icon.svg",
 		apple: "/icon.svg",
 	},
 	openGraph: {
-		title: "Bingooo.site | Free Online Bingo Games",
+		title: "Bingo | Free Online Bingo Games",
 		description: "Play free multiplayer Bingo games online with players worldwide. Real-time gameplay, fair random number generation, and a friendly community await!",
-		url: "https://bingooo.site",
-		siteName: "Bingooo.site",
+		url: "https://bingo.prateekbh111.in",
+		siteName: "Bingo",
 		type: "website",
 		locale: "en_US",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Bingooo.site | Free Online Bingo Games",
+		title: "Bingo | Free Online Bingo Games",
 		description: "Join the ultimate online Bingo experience! Play free multiplayer games with real-time action.",
 		creator: "@prateekbh111",
 	},
 	alternates: {
-		canonical: "https://bingooo.site",
+		canonical: "https://bingo.prateekbh111.in",
 	},
 	category: "Games & Entertainment",
 };

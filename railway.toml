@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npm install && cd packages/db && npm run db:generate && cd ../../apps/ws && npm run build"
 
 [deploy]
-startCommand = "cd apps/ws && node dist/index.js"
+startCommand = "cd apps/ws && npm run start"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"

@@ -5,8 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
-		"prebuild": "cd ../../packages/db && npm run db:generate || true",
+		"prebuild": "if [ -d ../../packages/db ]; then cd ../../packages/db && npm run db:generate; fi",
 		"build": "tsc -b",
+		"prestart": "if [ -d ../../packages/db ]; then cd ../../packages/db && npm run db:generate; fi",
 		"start": "node dist/index.js",
 		"lint": "eslint . --max-warnings 0",
 		"lint:fix": "eslint --fix ."

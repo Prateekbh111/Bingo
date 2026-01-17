@@ -1,8 +1,6 @@
 import { WebSocketServer } from "ws";
 import { BingoManager } from "./BingoManager";
 import { decode } from "next-auth/jwt";
-import fs from "fs";
-import https from "https";
 import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
@@ -10,24 +8,9 @@ dotenv.config();
 // Railway uses PORT, fallback to WS_PORT for local development
 const port = process.env.PORT ? parseInt(process.env.PORT) : (process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080);
 
-// Check if SSL certificates are provided via environment variables
-// Railway handles SSL automatically, so we typically won't need this in production
-const sslCertPath = process.env.SSL_CERT;
-const sslKeyPath = process.env.SSL_KEY;
-const useSSL = !!(sslCertPath && sslKeyPath);
-
-let server;
-if (useSSL) {
-	const sslOptions = {
-		cert: fs.readFileSync(sslCertPath),
-		key: fs.readFileSync(sslKeyPath),
-	};
-	server = https.createServer(sslOptions);
-	console.log(`Secure WebSocket server starting on port ${port} 🔒`);
-} else {
-	server = http.createServer();
-	console.log(`WebSocket server starting on port ${port} (HTTP) 🟢`);
-}
+// Railway handles SSL/HTTPS termination automatically
+// We only need HTTP server - Railway will handle the SSL layer
+const server = http.createServer();
 
 // Start the server listening on all interfaces
 server.listen(port, '0.0.0.0', () => {

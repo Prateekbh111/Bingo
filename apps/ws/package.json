@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
 		"prebuild": "npx prisma generate --schema=../../packages/db/prisma/schema.prisma || echo 'Prisma generate skipped - will run in prestart'",
-		"build": "bash build.sh || tsc -b",
+		"build": "tsc -b",
 		"prestart": "if [ -f ../../packages/db/prisma/schema.prisma ]; then npx prisma generate --schema=../../packages/db/prisma/schema.prisma; elif [ -f packages/db/prisma/schema.prisma ]; then npx prisma generate --schema=packages/db/prisma/schema.prisma; else npx prisma generate; fi",
 		"start": "node dist/index.js",
 		"lint": "eslint . --max-warnings 0",

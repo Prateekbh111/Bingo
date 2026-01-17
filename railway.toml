@@ -1,5 +1,6 @@
 [build]
 builder = "NIXPACKS"
+# Build from root - generates Prisma client and builds WebSocket server
 buildCommand = "npm install && cd packages/db && npm run db:generate && cd ../../apps/ws && npm run build"
 
 [deploy]

@@ -3,7 +3,7 @@
 	"private": true,
 	"scripts": {
 		"build:web": "npm run build --workspace=web",
-		"build:ws": "npm run build --workspace=ws",
+		"build:ws": "cd packages/db && npm run db:generate && cd ../../ && npm run build --workspace=ws",
 		"build": "npm run build:web && npm run build:ws",
 		"dev": "turbo dev",
 		"lint": "turbo lint",

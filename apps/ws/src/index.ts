@@ -10,7 +10,17 @@ const port = process.env.PORT ? parseInt(process.env.PORT) : (process.env.WS_POR
 
 // Railway handles SSL/HTTPS termination automatically
 // We only need HTTP server - Railway will handle the SSL layer
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+	// Health check endpoint for Railway
+	if (req.url === '/' && req.method === 'GET') {
+		res.writeHead(200, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ status: 'ok', service: 'websocket-server' }));
+		return;
+	}
+	// For all other HTTP requests, return 404 (WebSocket connections are handled separately)
+	res.writeHead(404, { 'Content-Type': 'application/json' });
+	res.end(JSON.stringify({ error: 'Not Found' }));
+});
 
 // Start the server listening on all interfaces
 server.listen(port, '0.0.0.0', () => {

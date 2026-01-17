@@ -10,6 +10,7 @@ import {
 	RECONNECT,
 } from "./types";
 import { prisma } from "./db/prisma";
+import { Prisma } from "@prisma/client";
 
 interface User {
 	id: string;
@@ -79,7 +80,7 @@ export class Game {
 	}
 
 	async handleCoinGame() {
-		await prisma.$transaction(async (tx) => {
+		await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 			const user1 = await tx.user.update({
 				where: { id: this.player1.id },
 				data: {

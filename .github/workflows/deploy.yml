@@ -1,63 +1,37 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+
 jobs:
-  build-and-deploy:
+  lint-and-test:
     runs-on: ubuntu-latest
-    environment: Production-Bingooo.site
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install SSH client
-      run: sudo apt-get install -y ssh
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Add SSH key
-      run: |
-        echo "${{ secrets.EC2_KEY }}" > private_key.pem
-        chmod 600 private_key.pem
+      - name: Install dependencies
+        run: npm install
 
-    - name: Copy .env from EC2
-      run: |
-        scp -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/.env .env
+      - name: Generate Prisma Client
+        run: cd packages/db && npm run db:generate
 
-    - name: Extract NEXT_PUBLIC_* envs
-      id: extract_envs
-      run: |
-        echo "DOCKER_BUILD_ARGS=" >> $GITHUB_ENV
-        while IFS= read -r line; do
-          if echo "$line" | grep -q "^NEXT_PUBLIC_"; then
-            key=$(echo $line | cut -d '=' -f1)
-            val=$(echo $line | cut -d '=' -f2-)
-            echo "$key=$val" >> $GITHUB_ENV
-            # Append to build args string
-            echo "DOCKER_BUILD_ARGS=$(echo $DOCKER_BUILD_ARGS --build-arg $key=$val)" >> $GITHUB_ENV
-          fi
-        done < .env
+      - name: Lint frontend
+        run: npm run lint --workspace=web
+        continue-on-error: true
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and Push Docker Image
-      run: |
-        docker buildx build \
-          --platform linux/amd64 \
-          --push \
-          -t prateekbh111/bingo-app:latest \
-          $DOCKER_BUILD_ARGS .
-
-    - name: Deploy to EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          docker-compose down
-          docker rmi -f $(docker images -q)
-          docker pull prateekbh111/bingo-app:latest
-          docker-compose up -d
-        EOF
+      - name: Lint WebSocket server
+        run: npm run lint --workspace=ws
+        continue-on-error: true

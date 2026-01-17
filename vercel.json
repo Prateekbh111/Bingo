@@ -1,0 +1,9 @@
+{
+    "buildCommand": "cd ../.. && npm install && cd packages/db && npm run db:generate && cd ../../apps/web && npm run build",
+    "devCommand": "cd ../.. && npm run dev --workspace=web",
+    "installCommand": "cd ../.. && npm install",
+    "framework": "nextjs",
+    "outputDirectory": "apps/web/.next",
+    "rootDirectory": "apps/web",
+    "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web"
+}

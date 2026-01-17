@@ -7,9 +7,11 @@ import http from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
-const port = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080;
+// Railway uses PORT, fallback to WS_PORT for local development
+const port = process.env.PORT ? parseInt(process.env.PORT) : (process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 8080);
 
 // Check if SSL certificates are provided via environment variables
+// Railway handles SSL automatically, so we typically won't need this in production
 const sslCertPath = process.env.SSL_CERT;
 const sslKeyPath = process.env.SSL_KEY;
 const useSSL = !!(sslCertPath && sslKeyPath);
@@ -34,18 +36,23 @@ server.listen(port, '0.0.0.0', () => {
 
 const wss = new WebSocketServer({ server: server });
 const bingoManager = new BingoManager();
-const secret = "secret";
+// Use NEXTAUTH_SECRET from environment variables (must match frontend)
+const secret = process.env.NEXTAUTH_SECRET || "secret";
 
 async function getTokenVal(req: any) {
 	try {
-		const sessionToken = req.url.match(/\/token=(.*)/)[1];
+		const match = req.url?.match(/\/token=(.*)/);
+		if (!match || !match[1]) {
+			return { error: "No token provided" };
+		}
+		const sessionToken = match[1];
 		const decoded = await decode({
 			token: sessionToken,
 			secret: secret,
 		});
 		return decoded;
-	} catch {
-		console.error("Token decoding error");
+	} catch (error) {
+		console.error("Token decoding error:", error);
 		return { error: "Invalid token" };
 	}
 }
